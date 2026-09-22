@@ -1,0 +1,12 @@
+# Loialt Energy — loialtenergy.com
+User-agent: *
+Allow: /
+
+# El panel de afinado y las herramientas internas no son contenido público.
+Disallow: /herramientas/
+# La 404 ya lleva noindex; se excluye también aquí por si acaso.
+Disallow: /404.html
+Disallow: /public/loialt-tune.js
+Disallow: /public/i18n-es.json
+
+Sitemap: https://loialtenergy.com/sitemap.xml

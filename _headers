@@ -1,0 +1,18 @@
+# Cabeceras para Netlify. IMPORTANTE: este archivo tiene que ir en la RAÍZ del
+# paquete que se arrastra a Netlify Drop, o no se aplica.
+#
+# A propósito NO se ponen cachés largas: los .js llevan ?v= y se pueden cachear,
+# pero las imágenes NO tienen ese sufijo, así que un `max-age` de un año serviría
+# la versión vieja si se reemplaza un archivo con el mismo nombre. El
+# comportamiento por omisión de Netlify (ETag + revalidación) es el correcto aquí.
+
+/*
+  # Impide que el navegador adivine el tipo de archivo (defensa contra que un
+  # archivo subido se interprete como script).
+  X-Content-Type-Options: nosniff
+  # Nadie debería poder incrustar el sitio en un iframe ajeno.
+  X-Frame-Options: DENY
+  # Al salir del sitio solo se manda el dominio, no la URL completa.
+  Referrer-Policy: strict-origin-when-cross-origin
+  # El sitio no usa cámara, micrófono ni ubicación.
+  Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=()
