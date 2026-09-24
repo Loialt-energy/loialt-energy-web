@@ -63,7 +63,33 @@ export function initTune(api){
     #loialtTune select{ background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.15); border-radius:5px;
       color:#eaf0f7; font:inherit; padding:2px 4px; }
     #loialtTune .lt-ok{ color:#78b85b; font-weight:700; }
-  </style>
+    /* MODO COMPACTO en viewport angosto (2026-09-22). Afinar las paradas de
+       MÓVIL obliga a tener el panel abierto EN ancho de móvil, y a 300px de
+       ancho por todo el alto tapaba dos tercios de la pantalla: no se veía lo
+       que se estaba ajustando, que es justo para lo que sirve el panel.
+       Se encoge el PANEL, nunca la vista de la página. La lista sigue completa,
+       solo se scrollea más (y el scroll ya funciona, por el atributo de Lenis).
+       El panel además se puede ARRASTRAR por su cabecera y minimizar con «–».
+       OJO: este CSS vive dentro de una plantilla de JS, así que aquí NO se
+       pueden escribir comillas invertidas — cierran la cadena y tumban el
+       módulo entero. Misma trampa que un cierre de hoja de estilos dentro de un
+       comentario CSS. */
+    @media (max-width:900px){
+      #loialtTune{ width:11.6rem; max-height:40svh; top:8px; right:8px;
+        font-size:10px; line-height:1.45; border-radius:9px; }
+      #loialtTune .lt-head{ padding:6px 8px; gap:5px; }
+      #loialtTune .lt-title{ font-size:9px; letter-spacing:.08em; }
+      #loialtTune .lt-copy{ padding:3px 6px; font-size:9px; border-radius:5px; }
+      #loialtTune summary{ padding:6px 8px; letter-spacing:.03em; }
+      #loialtTune .lt-body{ padding:2px 8px 8px; gap:4px; }
+      /* La columna de la etiqueta pasa de 78px a 52: a 186px de panel, 78 se
+         comía el espacio del deslizador y quedaba inusable. */
+      #loialtTune .lt-row{ grid-template-columns:52px 1fr 36px; gap:5px; }
+      #loialtTune input[type="range"]{ height:12px; }
+      #loialtTune input[type="number"]{ padding:1px 3px; }
+      #loialtTune .lt-flags{ gap:8px; }
+    }
+</style>
   <div class="lt-head">
     <span class="lt-title">LOIALT · TUNE</span>
     <div style="display:flex; gap:6px;">
@@ -275,12 +301,14 @@ export function initTune(api){
   })();
 
   // --- Secciones de STOPS (poses de espera del guía por diapositiva) ---
+  // El mismo constructor sirve para las de ESCRITORIO y las de MÓVIL: son dos
+  // mapas hermanos y planos (STOPS / STOPS_M), no un objeto anidado — por eso
+  // el exportador de abajo puede serializar los dos con el mismo `fmt`.
   const stopLabels = { tecnologia:'GUÍA · Tecnología (espera)', metrics:'GUÍA · Métricas (espera)', faq:'GUÍA · FAQ (espera)' };
-  for (const sid of Object.keys(api.stops || {})){
-    const st = api.stops[sid];
+  function seccionDeStop(sid, st, claveGuardado, rotulo){
     const det = document.createElement('details');
     const sum = document.createElement('summary');
-    sum.textContent = stopLabels[sid] || ('GUÍA · ' + sid);
+    sum.textContent = rotulo;
     det.appendChild(sum);
     const body = document.createElement('div');
     body.className = 'lt-body';
@@ -313,9 +341,26 @@ export function initTune(api){
       row.append(lab, rng, num);
       body.appendChild(row);
     }
-    addSave(body, [{ key:'stop.' + sid, obj:st }]);
+    addSave(body, [{ key:claveGuardado, obj:st }]);
     det.appendChild(body);
     root.appendChild(det);
+  }
+  /* Cada parada de MÓVIL va JUSTO DEBAJO de su pareja de escritorio, no todas
+     juntas al final: el panel mide ~4000px y al fondo no las encuentra nadie
+     (pasó, 2026-09-22). Así además la pareja escritorio/móvil se lee de un
+     vistazo. Se dibujan SIEMPRE, no solo por debajo de 900px, para poder
+     exportarlas desde el escritorio — pero OJO: solo se ven EN VIVO mientras
+     `matchMedia('(max-width:900px)')` coincida, así que para afinarlas hay que
+     estar en el modo dispositivo de DevTools, o en el teléfono. */
+  const stopsM = api.stopsM || {};
+  for (const sid of Object.keys(api.stops || {})){
+    const rotulo = stopLabels[sid] || ('GUÍA · ' + sid);
+    seccionDeStop(sid, api.stops[sid], 'stop.' + sid, rotulo);
+    if (stopsM[sid]) seccionDeStop(sid, stopsM[sid], 'stopM.' + sid, '📱 ' + rotulo + ' · MÓVIL');
+  }
+  // Por si algún día hay una parada de móvil sin equivalente en escritorio.
+  for (const sid of Object.keys(stopsM)){
+    if (!(api.stops || {})[sid]) seccionDeStop(sid, stopsM[sid], 'stopM.' + sid, '📱 GUÍA · ' + sid + ' · MÓVIL');
   }
 
   // --- Mover el panel (arrastrando la cabecera) + minimizar ---
@@ -379,10 +424,13 @@ export function initTune(api){
     const guideText = Object.keys(g).length
       ? `\n\nexport const GUIDE = {\n${Object.keys(g).map(k => `  ${k}: ${fmt(g[k])},`).join('\n')}\n};`
       : '';
-    const sts = api.stops || {};
-    const stopsText = Object.keys(sts).length
-      ? `\n\nexport const STOPS = {\n${Object.keys(sts).map(sid => `  ${sid}: { ${Object.keys(sts[sid]).map(k => `${k}: ${fmt(sts[sid][k])}`).join(', ')} },`).join('\n')}\n};`
+    // Un solo serializador para los dos mapas: STOPS_M es plano a propósito,
+    // justo para que `fmt` sirva igual (un objeto anidado saldría como
+    // "[object Object]" y se pegaría corrupto en el código).
+    const tabla = (nombre, mapa) => Object.keys(mapa).length
+      ? `\n\nexport const ${nombre} = {\n${Object.keys(mapa).map(sid => `  ${sid}: { ${Object.keys(mapa[sid]).map(k => `${k}: ${fmt(mapa[sid][k])}`).join(', ')} },`).join('\n')}\n};`
       : '';
+    const stopsText = tabla('STOPS', api.stops || {}) + tabla('STOPS_M', api.stopsM || {});
     const text = `// LOIALT TUNE — pegar en public/loialt-anim.js
 export const VALUES = {
 ${lines.join('\n')}

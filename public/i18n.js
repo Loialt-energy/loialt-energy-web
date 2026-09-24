@@ -86,7 +86,7 @@
 
     /* ── solución ──────────────────────────────────────────────────────── */
     'what.aria-label1': 'Solution',
-    'what.h21': 'The solution, <br><em>built for you</em>.',
+    'what.h21': 'The solution <br><em>built for you</em>.',
     'what.p1': 'Tap a solution for details',
     'what.span1': 'Cut what you spend on energy',
     'what.span2': 'Power that never drops',
@@ -272,7 +272,7 @@
     /* Nombre de marca: NO se traduce (decisión del 2026-09-08). */
     'financiamiento.div3': 'BESS as a Service',
     'financiamiento.h33': 'Nothing down',
-    'financiamiento.p4': 'Loialt designs, installs and runs the system, and gets paid out of the savings. You put in no capital and you don’t operate it.',
+    'financiamiento.p4': 'Loialt designs, installs, runs the system and gets paid out of the savings. You put in no capital and you don’t operate it.',
     'financiamiento.dato3': '',
     'doc.navFin': 'Financing',
 
@@ -343,7 +343,7 @@
     'doc.span3': 'Social media',
     'doc.aria-label6': 'Close',
     'doc.h31': 'Does your operation qualify?',
-    'doc.p3': 'Our systems are sized for energy-intensive operations. Answer 5 questions and we’ll confirm it with you.',
+    'doc.p3': 'Our systems are sized for energy-intensive operations. Answer 2 questions and we’ll confirm it with you.',
     'doc.label1': 'Work email <span class="req">*</span>',
     'doc.placeholder1': 'name@company.com',
     'doc.label2': 'Name <span class="req">*</span>',
@@ -363,6 +363,17 @@
     'doc.option7': 'Other',
     'doc.label5': 'Phone',
     'doc.placeholder5': 'Phone',
+    /* ZONA DEL PAÍS. Era `quiz.q1` (1ª pregunta del cuestionario) y bajó al
+       formulario el 2026-09-22: es un dato de contacto, no de calificación.
+       Los nombres de las zonas son topónimos mexicanos — se conservan. */
+    'doc.label-region': 'Region of Mexico',
+    'doc.region0': 'Select your region',
+    'doc.region1': 'North / Northeast',
+    'doc.region2': 'Bajío / West-Central',
+    'doc.region3': 'Mexico City / South-Central',
+    'doc.region4': 'Southeast / Yucatán Peninsula',
+    'doc.region5': 'Baja California',
+    'doc.region6': 'Somewhere else',
     'doc.button3': 'Send request<span class="fill"></span>',
     /* Campo del recibo. "Electricity bill" y no "receipt": en inglés de negocio
        un receipt es el comprobante de un pago hecho, y lo que se pide aquí es la
@@ -375,38 +386,28 @@
        Claves ESCRITAS A MANO, no generadas. Si alguna vez se vuelve a correr
        `herramientas/instrumentar-i18n.py`, re-numeraría estas como `doc.*`:
        el espacio de nombres `quiz.*` es deliberado. */
-    'quiz.q1': 'Which region does your company operate in?',
-    'quiz.q1.o1': 'North / Northeast',
-    'quiz.q1.o2': 'Bajío / West-Central',
-    'quiz.q1.o3': 'Mexico City / South-Central',
-    'quiz.q1.o4': 'Southeast / Yucatán Peninsula',
-    'quiz.q1.o5': 'Baja California',
-    'quiz.q1.o6': 'Somewhere else',
-    'quiz.q2': 'Which CFE tariff is your operation on?',
+    /* 2026-09-22 · El cuestionario pasó de 5 preguntas a 2 (pedido del cliente):
+       se fueron Prioridad y Cargos por demanda, y Región bajó al formulario
+       como `doc.region*`. Quedan las DOS que alimentan `clasificar()`. */
+    'quiz.q1': 'Which CFE tariff is your operation on?',
     // GDMTH / DIST / DIT son nombres propios de tarifas de CFE: NO se traducen.
-    'quiz.q2.o1': 'A time-of-use tariff (GDMTH, DIST or DIT)',
-    'quiz.q2.o2': 'Another tariff (basic commercial, residential…)',
-    'quiz.q2.o3': 'I’m not sure which one we’re on',
-    'quiz.q3': 'How much do you pay for electricity each month?',
+    'quiz.q1.o1': 'A time-of-use tariff (GDMTH, DIST or DIT)',
+    'quiz.q1.o2': 'Another tariff (basic commercial, residential…)',
+    'quiz.q1.o3': 'I’m not sure which one we’re on',
+    'quiz.q2': 'How much do you pay for electricity each month?',
     // Las cifras se quedan en MXN también en inglés: son pesos mexicanos y
     // convertirlas o quitar la divisa haría que un lector extranjero leyera
     // dólares.
-    'quiz.q3.o1': 'More than $900,000 MXN a month',
-    'quiz.q3.o2': 'Between $565,000 and $900,000 MXN',
-    'quiz.q3.o3': 'Less than $565,000 MXN',
-    'quiz.q3.o4': 'I don’t have the figure to hand',
-    'quiz.q4': 'What matters most to you on energy?',
-    'quiz.q4.o1': 'Cutting the cost',
-    'quiz.q4.o2': 'Keeping the operation running',
-    'quiz.q4.o3': 'Both',
-    'quiz.q5': 'Do you pay demand charges or penalties on your bill?',
-    'quiz.q5.o1': 'Yes, and they hurt',
-    'quiz.q5.o2': 'I think so, but we don’t have full visibility',
-    'quiz.q5.o3': 'No / I don’t know',
+    'quiz.q2.o1': 'More than $1,000,000 MXN a month',
+    'quiz.q2.o2': 'Between $600,000 and $1,000,000 MXN',
+    'quiz.q2.o3': 'Less than $600,000 MXN',
+    'quiz.q2.o4': 'I don’t have the figure to hand',
     'quiz.atras': '← Back',
     'quiz.siguiente': 'Next →',
-    'quiz.finTitulo': 'Thanks for answering!',
-    'quiz.fin': 'That’s enough for us to work out your savings. Fill in your details below and we’ll come back to you with the figure.',
+    // NO agradece: el cierre PIDE los datos. El gracias va tras enviar
+    // (`modal.gracias.*`), no antes.
+    'quiz.finTitulo': 'How can we reach you?',
+    'quiz.fin': 'That’s enough for us to work out your savings. Leave your details just below and we’ll come back to you with the figure.',
     'quiz.cambiar': 'Change my answers'
   };
 
@@ -414,7 +415,7 @@
      instrumentador). Se exponen para que index.html los consulte. */
   var EN_JS = {
     'modal.titulo.calc': 'Your exact savings',
-    'modal.sub.calc': 'Share a few details and we’ll send you your exact savings figure — free, no obligation.',
+    'modal.sub.calc': 'Our systems are sized for energy-intensive operations. Answer 2 questions and we’ll confirm it with you.',
     'modal.titulo.contacto': 'Let’s talk about your project',
     // La versión anterior ("Tell us what you need and we will get back to you")
     // perdía contenido del español: el especialista, Loialt y la promesa de una

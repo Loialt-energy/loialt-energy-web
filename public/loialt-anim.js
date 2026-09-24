@@ -86,8 +86,10 @@ export const GUIDE = {
   // (Rebase/overshoot al aterrizar — probado 2026-08-25, DESCARTADO: el usuario lo
   // sintió trabado. En su lugar, aterrizaje sin rebase con easeOutQuint: la
   // velocidad baja gradualmente hasta parar, sin pasarse y corregir. Ver tripFrame.)
-  maxRes: 640,            // tope de RESOLUCIÓN del canvas del guía (px); tamaños mayores
-                          // se logran con transform:scale (GPU) — evita render 4K a 60fps
+  maxRes: 640,              // tope de RESOLUCIÓN del canvas del guía (px); tamaños mayores
+                            // se logran con transform:scale (GPU) — evita render 4K a 60fps
+  mStopRes: 384,            // igual, pero SOLO para las paradas de MÓVIL. No toca el acople
+                            // de Críticos, que conserva `maxRes`: ahí el rayo protagoniza.
 };
 
 // STOPS — poses de ESPERA del guía por diapositiva.
@@ -206,6 +208,46 @@ export const STOPS = {
   faq:     { x: 92, y: 56, s: 2.75, rx: 0, ry: 0, op: 0.7, dim: 0.88, halo: 0, breathe: 1, z: -1 },  // afinado por el usuario en #tune (2026-09-03)
 };
 
+/* PARADAS DE MÓVIL (2026-09-22) ───────────────────────────────────────────────
+   El rayo ya NO se apaga fuera de Críticos en el teléfono: está PRESENTE DE
+   FONDO en varias losas. Lo que sigue muerto en móvil son los VIAJES — aparece
+   y desaparece con su losa, no vuela entre ellas.
+
+   Por qué ahora sí se puede, si el comentario viejo decía que castigaba al GPU:
+   `initLogo3D` corre un `requestAnimationFrame` INCONDICIONAL que nunca mira si
+   el lienzo se ve, así que el teléfono llevaba meses pagando el DIBUJO de un
+   canvas en `display:none`. Hacerlo visible cuesta composición, no dibujo.
+
+   ⚠️ MAPA APARTE, NO UN `m:{}` DENTRO DE CADA STOP. El exportador de #tune
+   serializa cada parada con `fmt(st[k])`, y `fmt` sobre un objeto emite
+   "[object Object]": el botón «Copiar valores» sacaría basura y se pegaría así
+   en el código. Siendo plano, se reusa el mismo serializador sin tocarlo, los
+   valores de escritorio (afinados a mano por el usuario) quedan en otro objeto
+   donde no se pueden pisar por accidente, y EL CONJUNTO DE CLAVES DE ESTE MAPA
+   ES LA LISTA BLANCA: no hay una segunda lista que mantener sincronizada.
+
+   ⚠️ LA UNIDAD DE `s` AQUÍ ES ~215 px, NO ~500. En móvil `.frame` mide
+   `min(62%,30svh)` ⇒ `heroFrameW()` ≈ 217 px en un teléfono de 390. Copiar un
+   `s` de escritorio da un rayo del triple de lo que se espera.
+
+   ⚠️ `dim` VA CLAVADO EN 1 A PROPÓSITO. `mountInStop` lo aplica como
+   `filter:brightness()`, y un filtro CSS sobre un lienzo que repinta cada cuadro
+   fuerza una pasada de filtro POR CUADRO — justo el fallo del que hablan las
+   tres reglas de oro de la foto estática. Se atenúa con `op`, que es composición
+   barata. El control se expone igual en #tune, pero el valor entregado es 1.
+
+   NO están las losas de DÍA (Solución, Tecnología) y es un límite REAL, no una
+   preferencia: en móvil esas losas pintan su propio fondo opaco y `.section` no
+   crea contexto de apilamiento, así que un hijo en `z:-1` se pinta ANTES que ese
+   fondo y queda INVISIBLE. Si algún día se quieren, hace falta
+   `@media(max-width:900px){ section[data-theme="day"]{ isolation:isolate } }`. */
+const STOPS_M = {
+  peak:      { x: 50, y: 50, s: 1.35, rx: 0, ry: 0, op: 0.45, dim: 1, halo: 0, breathe: 1, z: -1 },
+  productos: { x: 24, y: 20, s: 1.00, rx: 0, ry: 0, op: 0.40, dim: 1, halo: 0, breathe: 1, z: -1 },
+  metrics:   { x: 18, y: 42, s: 1.50, rx: 0, ry: 0, op: 0.20, dim: 1, halo: 0, breathe: 1, z: -1 },
+  faq:       { x: 84, y: 34, s: 1.40, rx: 0, ry: 0, op: 0.20, dim: 1, halo: 0, breathe: 1, z: -1 },
+};
+
 // Overrides guardados desde el panel #tune (botón 💾 por sección).
 // AUTO-INVALIDACIÓN (agregado 2026-08-25, bug recurrente): cada guardado queda
 // "sellado" con el default del CÓDIGO vigente al momento de guardar (`base`).
@@ -238,6 +280,7 @@ export function loadTuneSaved(){
   lsMerge('intro.lettermark', INTRO.lettermark);
   lsMerge('guide', GUIDE);
   Object.keys(STOPS).forEach(k => lsMerge('stop.' + k, STOPS[k]));
+  Object.keys(STOPS_M).forEach(k => lsMerge('stopM.' + k, STOPS_M[k]));
 }
 
 export const LABELS = {
@@ -552,7 +595,11 @@ export function initLoialtAnim(registry){
   // esa usa GUIDE.haloMax y vive en entryFrame.
   function haloDe(v, fade){ return String((v || 0) * (fade != null ? fade : 1)); }
   document.addEventListener('loialt:solstats', () => { guide.solGate = true; });
-  const mqMobile = window.matchMedia('(max-width: 900px)'); // móvil: guía SOLO en Críticos
+  const mqMobile = window.matchMedia('(max-width: 900px)');
+  /* La parada vigente según el ancho. En móvil manda STOPS_M, y si una losa no
+     está en ese mapa devuelve null ⇒ el rayo no aparece ahí. Gate VIVO: se
+     consulta al usarse, nunca se congela al inicializar. */
+  function stopOf(id){ return mqMobile.matches ? (STOPS_M[id] || null) : (STOPS[id] || null); }
   function gCanvas(){ return gEl ? gEl.querySelector('canvas') : null; }
 
   function heroFrameW(){
@@ -587,7 +634,7 @@ export function initLoialtAnim(registry){
   }
 
   function computeStopPose(id){ // destino VIVO para coreografías (coords viewport)
-    const st = STOPS[id]; const sec = document.getElementById(id);
+    const st = stopOf(id); const sec = document.getElementById(id);
     if (!st || !sec) return null;
     const sr = sec.getBoundingClientRect();
     return {
@@ -613,7 +660,7 @@ export function initLoialtAnim(registry){
   }
 
   function mountInStop(id, fade){ // PEGADO en la losa del stop (nativo con el scroll)
-    const st = STOPS[id]; const sec = document.getElementById(id);
+    const st = stopOf(id); const sec = document.getElementById(id);
     if (!st || !sec || !gEl) return false;
     const sr = sec.getBoundingClientRect();
     const size = Math.max(120, stopUnit(st, sr) * (st.s || 1));
@@ -623,7 +670,11 @@ export function initLoialtAnim(registry){
     // resolución base y expresar el tamaño con transform:scale. Re-baseline
     // solo si estaba oculto o la desviación es grande (y con opacidad 0).
     // La resolución se CAPEA a maxRes: los tamaños grandes van por scale (GPU).
-    const base = Math.min(size, GUIDE.maxRes || 640);
+    /* Tope de resolución MÁS BAJO en móvil, y SOLO aquí: el acople de Críticos
+       (`mountInDock` y la entrada) conserva el suyo, porque ahí el rayo es el
+       protagonista y debe verse igual que siempre. */
+    const techo = mqMobile.matches ? (GUIDE.mStopRes || 384) : (GUIDE.maxRes || 640);
+    const base = Math.min(size, techo);
     if (wasHidden || !guide.baseSize || base / guide.baseSize > 2 || base / guide.baseSize < 0.5){
       guide.baseSize = base;
       gEl.style.width = base + 'px'; gEl.style.height = base + 'px';
@@ -740,7 +791,7 @@ export function initLoialtAnim(registry){
       mountInDock();
       const cv2 = gCanvas(); if (cv2) cv2.style.opacity = '1';
       if (gHalo) gHalo.style.opacity = String(GUIDE.haloMax);   // se apaga en el dock
-      if (!guide.batOn){ guide.batOn = true; guide.everBat = true; guide.armed = false; if (window.LOIALT_BATTERY_ON) window.LOIALT_BATTERY_ON(); }
+      if (!guide.batOn){ guide.batOn = true; guide.armed = false; if (window.LOIALT_BATTERY_ON) window.LOIALT_BATTERY_ON(); }
     }
   }
 
@@ -876,6 +927,15 @@ export function initLoialtAnim(registry){
   //    de URL móvil redimensiona el viewport al scrollear y disparaba
   //    re-escrituras de layout en plena scrolleada (el "trabado" de v75).
   const MZONE = { x: 88, s: 2.75, op: 0.22, dim: 0.72, z: -1 };
+  /* (2026-09-22) La foto estática SOBRA si el rayo vivo ya cubre Métricas/FAQ:
+     `#mzoneWrap` abarca LAS DOS losas, así que se verían dos rayos — y uno
+     congelado junto a otro vivo y respirando se lee como fallo, no como estilo.
+     La bandera es auto-consistente (deriva de STOPS_M, no hay nada que
+     sincronizar a mano) y la función, su DOM y su bloque de tres reglas de oro
+     SE QUEDAN en el archivo: dado el historial del «v75 trabado», un booleano
+     tiene que poder devolver un respaldo ya probado. Borrar el código muerto
+     solo cuando la versión viva sobreviva una publicación. */
+  const MZONE_ON = !(STOPS_M.metrics || STOPS_M.faq);
   function mzRefresh(){
     const wrap = document.getElementById('mzoneWrap'); if (!wrap) return;
     const met = document.getElementById('metrics');
@@ -891,6 +951,7 @@ export function initLoialtAnim(registry){
     if (holder && holder.style.width !== szPx){ holder.style.width = szPx; holder.style.height = szPx; }
   }
   function setupMZoneStatic(){
+    if (!MZONE_ON) return;           // el rayo VIVO ya cubre esas losas
     if (!mqMobile.matches) return;
     if (document.getElementById('mzoneWrap')) return;   // idempotente
     const met = document.getElementById('metrics');
@@ -935,10 +996,10 @@ export function initLoialtAnim(registry){
   }
   // el canvas del hero puede tardar (preloader/carga) → reintenta hasta lograrlo
   let mzTries = 0;
-  const mzTimer = setInterval(() => {
+  const mzTimer = MZONE_ON ? setInterval(() => {
     setupMZoneStatic();
     if (document.getElementById('mzoneWrap') || ++mzTries > 30) clearInterval(mzTimer);
-  }, 700);
+  }, 700) : null;
   if (mqMobile.addEventListener) mqMobile.addEventListener('change', () => setTimeout(setupMZoneStatic, 300));
 
   // Fracción visible de la batería en el viewport (0..1) — free scroll móvil
@@ -959,30 +1020,67 @@ export function initLoialtAnim(registry){
     const moving = Math.abs(window.scrollY - guide.lastY) > 1.5;
     guide.lastY = window.scrollY;
 
-    // Re-arme de Críticos: SOLO si la secuencia nunca llegó al dock (everBat)
-    // — completada una vez (desktop O móvil), la batería/tarjetas se quedan
-    // como están y NO se re-lanzan al volver a Nosotros; solo un refresh de
-    // página reinicia todo (2026-08-26, pedido explícito del usuario: "al
-    // subir a la diapositiva anterior no quiero que se reinicie la
-    // animación"). Un vuelo cancelado a medias (nunca cargó) sí se re-arma.
-    //  · Desktop (pager): al volver a Nosotros (losa arriba casi completa).
-    //  · Móvil (free scroll): al sacar la losa completa del viewport.
-    const rearm = !guide.everBat && (mqMobile.matches
-      ? (pr && (pr.bottom < 0 || pr.top > innerHeight))
-      : (probTop > innerHeight * 0.9));
-    if (rearm){
+    /* Re-arme de Críticos: SIEMPRE que la losa se abandona, y EN LOS DOS
+       SENTIDOS. Al volver, la batería se carga desde cero y las 3 tarjetas
+       vuelven a entrar escalonadas (2026-09-22, pedido del CLIENTE).
+         OJO — esto REVIERTE la decisión del 2026-08-26, que era justo la
+         contraria ("al subir a la diapositiva anterior no quiero que se
+         reinicie la animación") y se implementó con el candado `guide.everBat`.
+         Ese candado ya no existe: si vuelve a pedirse el comportamiento de
+         quedarse cargada, hay que reintroducirlo aquí, no parchear más abajo.
+
+       ⚠️ HACEN FALTA LAS DOS DIRECCIONES, y es el fallo con el que nació este
+       cambio: la primera versión solo miraba `probTop > innerHeight * 0.9`, que
+       es cierto únicamente cuando la losa queda POR DEBAJO de la ventana, o sea
+       al salir HACIA ARRIBA. Bajando a Solución nunca se re-armaba, así que al
+       volver desde abajo `guide.batOn` seguía en true y la rama de más abajo
+       cortaba con `mountInDock()` sin repetir nada. La condición de móvil sí
+       cubría los dos sentidos desde el principio. */
+    /* MÓVIL: se mide la BATERÍA VISIBLE, no el rectángulo de la losa.
+       Con el scroll libre las losas vecinas miden su contenido, así que
+       `pr.top > innerHeight` casi nunca se cumple —MEDIDO: subiendo a Nosotros
+       no se re-armaba nunca, y bajando a Solución el borde inferior de la losa
+       cae EXACTAMENTE en 0, así que un `< 0` falla por un pelo—. `batVisFrac()`
+       es indiferente a la dirección y al alto de las vecinas, y además reusa el
+       umbral que ya gobierna la entrada (0.75 para entrar, 0.35 para abandonar):
+       histéresis limpia con los números que ya estaban elegidos. */
+    const movil = mqMobile.matches;
+    const bajando = !movil && pr && pr.bottom < innerHeight * 0.1;
+    const fuera = movil
+      ? (batVisFrac() < 0.35)
+      : (probTop > innerHeight * 0.9 || bajando);
+    if (fuera){
       guide.armed = true;
       if (guide.batOn){ guide.batOn = false; if (window.LOIALT_BATTERY_OFF) window.LOIALT_BATTERY_OFF(); }
-      if (guide.stuckAt === 'dock' || guide.entry){ guide.entry = null; hideGuide(); }
+      /* ¿Hay quien recoja el rayo, o hay que esconderlo?
+         Bajando EN ESCRITORIO sí: la rama del dock se lo entrega a la parada de
+         la losa siguiente (`mountInStop`), y esconderlo aquí le quitaría ese
+         relevo y daría un parpadeo.
+         En cualquier otro caso NO, y hay que esconderlo:
+           · hacia arriba no hay ninguna parada (Nosotros no tiene);
+           · en MÓVIL no hay paradas en absoluto, así que si se deja acoplado se
+             queda dentro de una losa fuera de pantalla y —peor— su propia rama
+             del dock retorna antes de tiempo, impidiendo que la entrada se
+             vuelva a disparar al regresar. */
+      const hayRelevo = bajando && !(probTop > innerHeight * 0.9);
+      if (guide.stuckAt === 'dock' && !hayRelevo) hideGuide();
+      // Una entrada a medio vuelo sí se cancela en ambos sentidos.
+      if (guide.entry){ guide.entry = null; hideGuide(); }
     }
 
     // MÓVIL (<900px): esperas y viajes DESACTIVADOS — el guía solo vive en
     // Críticos (entrada + dock); un render 3× detrás de un viewport angosto
     // estorba al contenido y castiga al GPU del teléfono
     if (mqMobile.matches){
-      guide.trip = null;
-      if (guide.mode === 'stuck' && guide.stuckAt !== 'dock') hideGuide();
+      guide.trip = null;                                   // los VIAJES siguen muertos
+      // (2026-09-22) Ya NO se esconde el rayo pegado a una parada: en móvil
+      // ahora vive de fondo en las losas de STOPS_M. La red de seguridad del
+      // vuelo obsoleto se conserva, por si un resize cruza el corte a media
+      // coreografía de escritorio.
       if (guide.mode === 'flying' && !guide.entry) hideGuide();
+      // Y si está pegado a una losa que NO es de móvil (p. ej. se cruzó el
+      // corte desde escritorio), se va.
+      if (guide.mode === 'stuck' && guide.stuckAt !== 'dock' && !STOPS_M[guide.stuckAt]) hideGuide();
     }
 
     // Si el usuario ABANDONA Críticos con la entrada en pleno vuelo, se cancela
@@ -1035,14 +1133,16 @@ export function initLoialtAnim(registry){
     // PEGADO en un stop
     if (guide.mode === 'stuck' && guide.stuckAt !== 'dock'){
       const cur = guide.stuckAt;
-      const st = STOPS[cur];
+      const st = stopOf(cur);
       if (!st){ hideGuide(); return; }
       if (centerId === cur){
         // despegue anticipado: la losa empieza a irse → programa el viaje YA
         // (el temporizador corre desde el arranque del gesto)
         const sec = document.getElementById(cur);
         const srTop = sec ? sec.getBoundingClientRect().top : 0;
-        if (moving && Math.abs(srTop) > 12){
+        // Solo escritorio: en móvil esto programaría un viaje que el candado
+        // de arriba anula al cuadro siguiente — un cuadro perdido y un parpadeo.
+        if (!mqMobile.matches && moving && Math.abs(srTop) > 12){
           const nb = neighborStop(cur, srTop < 0 ? 1 : -1);
           if (nb){ guide.trip = { from: cur, to: nb, phase: 'waitGo', t: 0, u: 0 }; return; }
         }
@@ -1057,7 +1157,7 @@ export function initLoialtAnim(registry){
         if (snap !== guide.snap){ mountInStop(cur, guide.fade); return; } // edición en vivo (#tune)
         gEl.style.opacity = String((st.op != null ? st.op : 1) * guide.fade);
         if (gHalo) gHalo.style.opacity = haloDe(st.halo, guide.fade);
-      } else if (centerId && STOPS[centerId]){
+      } else if (centerId && stopOf(centerId) && !mqMobile.matches){   // viajes: solo escritorio
         guide.trip = { from: cur, to: centerId, phase: 'waitGo', t: 0, u: 0 };
       } else {
         guide.fade -= dt / 0.25; // losa sin stop → se va con su losa y se desvanece
@@ -1072,17 +1172,24 @@ export function initLoialtAnim(registry){
     if (guide.mode === 'stuck' && guide.stuckAt === 'dock'){
       guide.dockT += dt;
       if (gHalo) gHalo.style.opacity = String(Math.max(0, 1 - guide.dockT / 0.5) * GUIDE.haloMax);
-      if (centerId && STOPS[centerId]){ guide.fade = 0; mountInStop(centerId, 0); } // reaparece en el stop
+      if (centerId && stopOf(centerId)){ guide.fade = 0; mountInStop(centerId, 0); } // reaparece en el stop
       return;
     }
 
-    // OCULTO: decidir presencia
-    if (centerId && STOPS[centerId] && !mqMobile.matches){
+    // OCULTO: decidir presencia.
+    /* ⚠️ CRÍTICOS SE EVALÚA PRIMERO. En móvil `batVisFrac() >= 0.75` y un
+       `centerId` con parada pueden ser ciertos A LA VEZ (scroll libre, batería
+       sticky alta); en escritorio no, porque el paginador hace que el centro sea
+       `problems` siempre que estás en Críticos. Si se montara la parada antes,
+       esa rama retorna y el acople no tendría turno nunca. Con la lista blanca
+       actual la ventana está vacía, pero no conviene depender de eso. */
+    const critAhora = (centerId === 'problems') || (mqMobile.matches && batVisFrac() >= 0.75);
+    if (!critAhora && centerId && stopOf(centerId)){
       guide.fade = 0;
       mountInStop(centerId, 0); // fade-in lo hace el branch pegado
       return;
     }
-    if (centerId === 'problems' || (mqMobile.matches && batVisFrac() >= 0.75)){
+    if (critAhora){
       if (guide.batOn){ mountInDock(); guide.dockT = 1; return; } // regresa al dock sticky ya cargado
       if (!guide.armed) return;
       // gate del preloader (refresh sobre Críticos): esperar a que desaparezca
@@ -1119,10 +1226,22 @@ export function initLoialtAnim(registry){
   }
 
   // Recalcular el montaje pegado al cambiar el tamaño de la ventana
+  /* ⚠️ CON REBOTE, y es el mayor riesgo de regresión de todo esto: en móvil la
+     barra de URL dispara `resize` MIENTRAS SCROLLEAS, y re-montar en caliente a
+     media scrolleada fue la causa raíz documentada del «v75 trabado». Además se
+     ignoran los cambios de solo-alto menores a 140px, que son justo esa barra
+     apareciendo y desapareciendo. Nada de `ResizeObserver` sobre el body. */
+  let rzT = 0, rzW = window.innerWidth, rzH = window.innerHeight;
   window.addEventListener('resize', () => {
-    if (guide.mode !== 'stuck') return;
-    if (guide.stuckAt === 'dock') mountInDock();
-    else if (guide.stuckAt) mountInStop(guide.stuckAt, guide.fade);
+    const dW = Math.abs(window.innerWidth - rzW), dH = Math.abs(window.innerHeight - rzH);
+    if (mqMobile.matches && dW === 0 && dH < 140) return;   // jitter de la barra de URL
+    rzW = window.innerWidth; rzH = window.innerHeight;
+    clearTimeout(rzT);
+    rzT = setTimeout(() => {
+      if (guide.mode !== 'stuck') return;
+      if (guide.stuckAt === 'dock') mountInDock();
+      else if (guide.stuckAt) mountInStop(guide.stuckAt, guide.fade);
+    }, mqMobile.matches ? 250 : 0);
   });
 
   if (gEl) hideGuide(); // estado inicial: oculto (el hero tiene su propio render)
@@ -1153,7 +1272,7 @@ export function initLoialtAnim(registry){
   applyAll();
 
   const api = {
-    values: VALUES, intro: INTRO, guide: GUIDE, stops: STOPS, labels: LABELS, items,
+    values: VALUES, intro: INTRO, guide: GUIDE, stops: STOPS, stopsM: STOPS_M, labels: LABELS, items,
     apply, applyAll, sectionProgress,
     holdIntro, flyIntro, replayIntro, cancelIntro, introApply,
     introState: () => intro.state,

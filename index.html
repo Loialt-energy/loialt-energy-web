@@ -40,17 +40,26 @@
 <meta property="og:url" content="https://loialtenergy.com/" />
 <meta property="og:title" data-i18n-attr-content="doc.title1" content="Loialt Energy — Almacenamiento de energía BESS" />
 <meta property="og:description" data-i18n-attr-content="doc.description1" content="Sistemas de almacenamiento de energía BESS para la industria en México. Recorta tu pico de demanda, respalda cargas críticas y gana control energético." />
-<meta property="og:image" content="https://loialtenergy.com/public/og-loialt.jpg" />
+<!-- TARJETA AL COMPARTIR (2026-09-24, pedido del cliente): pasó de una foto de
+     baterías al LOGO sobre el azul de marca. Se genera con
+     `herramientas/og-image.html` —el wordmark SVG de la propia página sobre
+     #021838— capturado a 2400×1260 y reducido a la mitad, para que el texto
+     quede nítido. El anterior está en backups/og-anterior-20260924/.
+     ⚠️ El `?v=` NO es decorativo: WhatsApp, LinkedIn y Facebook cachean la
+     imagen POR URL. Sin cambiarla seguirían enseñando la foto vieja durante
+     días aunque el archivo ya sea otro. Al cambiar la imagen, subir el número.
+     ⚠️ Y aun así hay que forzar el re-rastreo en el depurador de cada red. -->
+<meta property="og:image" content="https://loialtenergy.com/public/og-loialt.jpg?v=2" />
 <meta property="og:image:type" content="image/jpeg" />
 <meta property="og:image:width" content="1200" />
-<meta property="og:image:height" content="675" />
-<meta property="og:image:alt" content="Planta de almacenamiento de energía con baterías BESS" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="Loialt Energy" />
 <meta property="og:locale" content="es_MX" />
 <meta property="og:locale:alternate" content="en_US" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" data-i18n-attr-content="doc.title1" content="Loialt Energy — Almacenamiento de energía BESS" />
 <meta name="twitter:description" data-i18n-attr-content="doc.description1" content="Sistemas de almacenamiento de energía BESS para la industria en México. Recorta tu pico de demanda, respalda cargas críticas y gana control energético." />
-<meta name="twitter:image" content="https://loialtenergy.com/public/og-loialt.jpg" />
+<meta name="twitter:image" content="https://loialtenergy.com/public/og-loialt.jpg?v=2" />
 
 <!-- Datos estructurados. SOLO se afirma lo que está respaldado: nombre, sitio,
      logo y correo. NO se pone teléfono ni dirección porque en el pie siguen
@@ -435,23 +444,41 @@ html.tone-night .social-fab-list a:hover{ color:var(--energy); }
     background:transparent; box-shadow:none; -webkit-backdrop-filter:none; backdrop-filter:none;
   }
 }
-/* .quicknav-dock (copia centrada entre logo y CTA) con "Puntos críticos" ya no
-   cabe cómodo en anchos intermedios — achicar SOLO ahí (rango acotado, no
-   tocar el .quicknav de abajo que ya tiene su propio margen/overflow-x). */
-@media (min-width:901px) and (max-width:1300px){
-  .quicknav-dock{ gap:clamp(0.5rem,1.6vw,1rem); }
-  .quicknav-dock a{ font-size:clamp(.76rem,1vw,.92rem); }
-  .quicknav-dock a:not(:first-child)::before{ left:calc(clamp(0.5rem,1.6vw,1rem) * -0.5); }
-}
-/* SEGUNDO ESCALÓN (2026-09-21): con la 7ª entrada —Financiamiento— el escalón
-   de arriba ya no bastaba. MEDIDO: a 1000px el dock se montaba 24px sobre el
-   logo y el CTA quedaba a 3px. Aquí se aprieta más para que las siete sigan
-   visibles en todo el rango de escritorio. Si algún día entra una octava,
-   este es el sitio donde mirar primero. */
-@media (min-width:901px) and (max-width:1120px){
-  .quicknav-dock{ gap:clamp(0.32rem,1.1vw,0.6rem); }
-  .quicknav-dock a{ font-size:clamp(.68rem,0.88vw,.8rem); letter-spacing:-.01em; }
-  .quicknav-dock a:not(:first-child)::before{ left:calc(clamp(0.32rem,1.1vw,0.6rem) * -0.5); height:0.8rem; }
+/* ── DOCK PAGINADO (2026-09-22) ──────────────────────────────────────────────
+   SUSTITUYE a dos escalones de compresión por ancho (1300px y 1120px) que
+   achicaban la letra hasta que las siete entradas cupieran. Se quitaron porque
+   fallaban en las dos direcciones:
+     · CHOCABAN IGUAL, y de golpe. El escalón moría en `max-width:1300px`, así
+       que a 1301px la letra saltaba de 13px a 15px con la ventana apenas 1px
+       más ancha: MEDIDO, el hueco contra el wordmark pasaba de 95px a **6px**.
+       Un acantilado, y causado justo por adivinar el corte en una media query.
+     · Y donde no chocaban, no se leían: a 1000-1120px la letra caía a 10.88px,
+       por debajo del piso de legibilidad que este mismo proyecto fijó (~11.7px)
+       al auditar el móvil.
+   Ahora la letra NO se achica nunca y, cuando las siete no caben, la barra se
+   parte en dos páginas con flechas — el mismo esquema que ya usa la barra de
+   abajo en móvil. Quién decide es `initDockPaginado()`, que MIDE el hueco real
+   entre el wordmark y el CTA; no hay ningún ancho escrito a mano. */
+@media (min-width:901px){
+  /* QUÉ ENLACES SE VEN lo decide el JS con `style.display` (el número de páginas
+     y el reparto son medidos, no fijos), así que aquí no hay reglas por página.
+     El CSS solo pone las flechas y quita el separador sobrante. */
+  .quicknav-dock.qn-paginado .qn-flecha{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:1.5rem; height:1.5rem; padding:0; flex:0 0 auto;
+    background:none; border:0; cursor:pointer; color:inherit;
+    font-size:.9rem; line-height:1; opacity:.55;
+    transition:opacity .2s ease, color .2s ease;
+  }
+  .quicknav-dock.qn-paginado .qn-flecha:hover{ opacity:1; color:var(--energy); }
+  /* La flecha del extremo al que NO se puede ir se oculta con `visibility`, no
+     con `display`: así las palabras no se recorren al cambiar de página. */
+  .quicknav-dock.qn-paginado.qn-primera .qn-prev,
+  .quicknav-dock.qn-paginado.qn-ultima  .qn-next{ visibility:hidden; pointer-events:none; }
+  /* El separador cuelga del ::before de cada <a> que no sea el primero de su
+     tipo. En una página que no empieza por el primero de todos, al primero
+     visible le aparecería una rayita suelta delante; el JS lo marca. */
+  .quicknav-dock.qn-paginado a[data-qn-ini]::before{ content:none; }
 }
 /* Tinta de los overlays FIJOS (nav + quicknav) según el tono de página, ya que viven
    fuera de las <section> y no heredan el data-theme de la diapositiva. */
@@ -1185,7 +1212,7 @@ html .quicknav, html .quicknav a, html header.nav{ transition: color .6s ease, b
 .fin-eje b{ color:var(--ink-dim); font-weight:600; }
 /* La barra se desvanece hacia la derecha: es el «de todo a nada» dibujado. */
 .fin-eje i{ display:block; width:100%; height:0.1875rem; border-radius:0.1875rem;
-  background:linear-gradient(90deg, var(--energy) 0%, rgba(130,189,103,.28) 62%, rgba(130,189,103,0) 100%); }
+  background:linear-gradient(90deg, var(--energy) 0%, rgba(var(--fin-rgb),.28) 62%, rgba(var(--fin-rgb),0) 100%); }
 
 .fin-grid{ display:grid; grid-template-columns:repeat(3,1fr);
   gap:clamp(1.25rem,3vw,2.75rem); align-items:start; }
@@ -1211,8 +1238,24 @@ html .quicknav, html .quicknav a, html header.nav{ transition: color .6s ease, b
      · `--fin-tramo` alarga el TALLO hacia DENTRO de la tarjeta — no cuesta
        nada porque cae sobre el render, y es lo que de verdad dibuja la escalera.
    Así el descenso se lee fuerte sin gastar altura. */
-#financiamiento{ --fin-paso:clamp(1.25rem,3vh,2.25rem); --fin-gancho:clamp(1.25rem,3vh,2rem);
-  --fin-tramo:clamp(2rem,5.5vh,4rem); }
+#financiamiento{
+  /* EL PASO YA NO ES UN CLAMP FIJO (2026-09-24, pedido del cliente: «la mayor
+     separación posible, que se ajuste a la pantalla»). El valor de en medio lo
+     MIDE `initEscaleraFin()` y lo escribe en `--fin-libre`; piso y techo se
+     quedan aquí de barandal. El fallback es el término de antes, así que SIN JS
+     la losa renderiza como siempre. */
+  --fin-piso:1.25rem; --fin-techo:5.5rem;
+  --fin-paso: clamp(var(--fin-piso), var(--fin-libre, 3vh), var(--fin-techo));
+  --fin-gancho:clamp(1.25rem,3vh,2rem);
+  /* El TRAMO sube fuerte porque es la perilla GRATIS: alarga el tallo hacia
+     dentro de la tarjeta, sobre el render, sin gastar presupuesto vertical.
+     Es lo que de verdad dibuja el descenso. */
+  --fin-tramo:clamp(2.5rem,8vh,5rem);
+  /* Canales del verde de marca (= --energy #82bd67) para poder pedirle alfa a
+     la escalera. Va como token y no suelto porque el tallo y la barra del eje
+     se dibujan con degradados translúcidos, y así se afinan por tono desde un
+     solo sitio. Antes estaba escrito a mano en tres degradados (2026-09-22). */
+  --fin-rgb:130,189,103; }
 .fin-card{ position:relative; }
 .fin-card:nth-child(1){ margin-top:calc(-1 * var(--fin-paso)); }
 .fin-card:nth-child(3){ margin-top:var(--fin-paso); }
@@ -1221,7 +1264,7 @@ html .quicknav, html .quicknav a, html header.nav{ transition: color .6s ease, b
    escalera. Se desvanece hacia abajo para que no compita con el contenido. */
 .fin-card::before{ content:''; position:absolute; left:0; width:1px;
   top:calc(-1 * var(--tallo)); height:calc(var(--tallo) + var(--baja));
-  background:linear-gradient(180deg, rgba(130,189,103,.85), rgba(130,189,103,.10)); }
+  background:linear-gradient(180deg, rgba(var(--fin-rgb),.85), rgba(var(--fin-rgb),.10)); }
 /* Punto de anclaje en el eje: remata el tallo y marca la posición en la escala. */
 .fin-card::after{ content:''; position:absolute; left:-0.1875rem; width:0.4375rem; height:0.4375rem;
   top:calc(-1 * var(--tallo) - 0.1875rem); border-radius:50%; background:var(--energy); }
@@ -1260,7 +1303,8 @@ html .quicknav, html .quicknav a, html header.nav{ transition: color .6s ease, b
   #financiamiento{ --fin-h:clamp(7rem,17vh,10.5rem); --pad-sup:3.25rem; --pad-inf:1rem; }
   #financiamiento .prob-head{ margin-bottom:1rem; }
   .fin-intro{ margin-top:0.625rem; }
-  #financiamiento{ --fin-paso:clamp(1rem,2.5vh,1.75rem); --fin-tramo:clamp(1.5rem,4vh,2.75rem); }
+  #financiamiento{ --fin-piso:1rem; --fin-techo:3.5rem; --fin-libre:2.5vh;
+    --fin-tramo:clamp(2rem,6vh,4rem); }
   .fin-body{ margin-top:0.875rem; padding-top:0.875rem; }
 }
 /* Segundo escalón: una pantalla de 720p con el cromo del navegador deja ~633px
@@ -1270,7 +1314,8 @@ html .quicknav, html .quicknav a, html header.nav{ transition: color .6s ease, b
   #financiamiento .prob-head{ margin-bottom:0.625rem; }
   #financiamiento .prob-head h2{ font-size:clamp(1.6rem,3.2vw,2.4rem); }
   .fin-intro{ margin-top:0.5rem; font-size:.92rem; }
-  #financiamiento{ --fin-paso:clamp(0.75rem,2vh,1.25rem); --fin-tramo:clamp(1.25rem,3vh,2rem); }
+  #financiamiento{ --fin-piso:0.75rem; --fin-techo:2.5rem; --fin-libre:2vh;
+    --fin-tramo:clamp(1.5rem,4.5vh,3rem); }
   .fin-body{ margin-top:0.625rem; padding-top:0.625rem; }
 }
 
@@ -1520,7 +1565,8 @@ input[type=range]::-moz-range-thumb{ width:1.125rem; height:1.125rem; border-rad
 .quiz-fin button:hover{ color:var(--energy-deep); }
 /* Se OCULTA sin quitar su hueco: con `display:none` el panel encogería de golpe
    justo cuando termina el giro, y se vería el tirón. */
-.mf-quiz.completo .quiz-nav, .mf-quiz.completo .quiz-barra{ visibility:hidden; }
+.mf-quiz.completo .quiz-nav, .mf-quiz.completo .quiz-barra,
+.mf-quiz.completo .quiz-cuenta{ visibility:hidden; }
 [data-theme="night"] .quiz-nav button:hover, [data-theme="night"] .quiz-fin button:hover{ color:var(--energy); }
 
 /* Adjuntar el recibo. Opcional, y así se rotula. El <input type=file> nativo
@@ -1827,6 +1873,8 @@ em, i, cite, address, dfn, var{ font-style:normal; }
   /* Apiladas, el escalón solo desalinea: el espectro ya lo cuenta el orden. */
   /* Sin escalera en móvil: basta con anular el PASO y el resto —márgenes,
      tallos, hueco del eje— se ajusta solo, porque todo deriva de esa variable. */
+  /* Móvil: una sola columna, sin escalera. El piso del clamp resucitaría el
+     paso, así que se anula el clamp entero, no solo `--fin-libre`. */
   #financiamiento{ --fin-paso:0rem; --fin-gancho:clamp(1rem,3vw,1.5rem); }
   .fin-card::before, .fin-card::after{ display:none; }
   .fin-intro{ max-width:none; }
@@ -2479,12 +2527,19 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
 <!-- NAV -->
 <header class="nav" id="nav">
   <a class="brand" href="#hero"><svg class="brand-wm" viewBox="130 258 6435 528" role="img" aria-label="Loialt Energy"><g transform="translate(140 770) scale(0.72) translate(-140 -770)"><path class="wm-ink" d="M140.0 770.0V70.0H338.0V613.0H672.0V770.0ZM1103.0 784.0Q1019.0 784.0 948.0 757.0Q877.0 730.0 824.5 680.5Q772.0 631.0 743.0 565.0Q714.0 499.0 714.0 420.0Q714.0 341.0 743.0 275.0Q772.0 209.0 824.5 159.5Q877.0 110.0 948.0 83.0Q1019.0 56.0 1103.0 56.0Q1188.0 56.0 1258.5 83.0Q1329.0 110.0 1381.0 159.5Q1433.0 209.0 1462.5 275.0Q1492.0 341.0 1492.0 420.0Q1492.0 499.0 1462.5 565.5Q1433.0 632.0 1381.0 681.0Q1329.0 730.0 1258.5 757.0Q1188.0 784.0 1103.0 784.0ZM1103.0 620.0Q1143.0 620.0 1177.5 606.0Q1212.0 592.0 1237.5 565.5Q1263.0 539.0 1277.5 502.0Q1292.0 465.0 1292.0 420.0Q1292.0 374.0 1277.5 337.5Q1263.0 301.0 1237.5 274.5Q1212.0 248.0 1177.5 234.0Q1143.0 220.0 1103.0 220.0Q1063.0 220.0 1028.5 234.0Q994.0 248.0 968.5 274.5Q943.0 301.0 928.5 337.5Q914.0 374.0 914.0 420.0Q914.0 465.0 928.5 502.0Q943.0 539.0 968.5 565.5Q994.0 592.0 1028.5 606.0Q1063.0 620.0 1103.0 620.0ZM1596.0 770.0V70.0H1794.0V770.0Z"/><path class="wm-ink" d="M 2212.2988750526292,442.1486574883385 L 2163.4302985655318,497.84185373996365 C 2158.7336704756126,503.1940752245853 2153.9403154913934,507.52529060270285 2146.0194575914616,507.51454317000287 L 1965.4410933653312,507.3210893814021 C 1953.3717264431823,507.3103419487021 1943.0541910511406,498.63716375976696 1938.5080270190222,489.50184596473 C 1932.8871197168994,478.20629419698435 1933.9511155542039,464.7827507546301 1942.2051438678373,455.19604078619125 L 2013.4391278037251,372.3333346688562 L 2093.8621666981503,279.79793912148193 L 2217.0384928733483,137.1687597592051 L 2270.4747282579647,75.54298065715591 C 2275.687233117486,69.53516577783162 2284.6720868547222,68.76135062342848 2291.421474590349,71.54493569273973 C 2298.1708623259765,74.328520762051 2302.931975012096,80.95968673797779 2302.931975012096,89.27819964781145 L 2302.888985281296,186.1985477368034 C 2302.888985281296,197.0534547638473 2300.5675398180865,207.370990155889 2295.8494168627676,216.82873093192728 L 2287.401934760533,233.7774322998958 L 2180.8948767031025,392.85018369323905 L 2157.809391263409,427.08075684287746 C 2156.8958594839055,428.4349333630829 2157.3365042246073,430.6381570665918 2157.99209761931,431.7881323654965 C 2158.5724589851125,432.81988590470075 2159.948130370718,433.6796805207041 2161.8074362278253,433.6796805207042 L 2209.7732283681194,433.6796805207042 C 2211.922714908128,433.6689330880042 2213.4810926496343,435.2703005603107 2213.964727121136,436.5492450516158 C 2214.738542275539,438.591257264624 2213.9969694192364,440.22486703503057 2212.3203699180294,442.1486574883385 L 2212.2988750526292,442.1486574883385"/><path class="wm-accent" d="M 2144.0204351092534,705.0416087641016 L 2151.081498393182,633.1842737316109 C 2152.5431492403877,618.3205743074508 2157.9706027539096,603.9082670566925 2166.762002702545,591.6239514805429 L 2289.830854550743,419.5790488182472 C 2291.7331501386507,416.9244329413365 2288.0252858571357,414.076363275825 2285.7790724228266,414.07636327582486 L 2232.009666624509,414.07636327582486 C 2230.3115722579023,414.07636327582486 2228.8821637087967,412.87265081342 2228.301802342994,412.02360363011667 C 2227.5709769193913,410.94886036011235 2227.022857851689,408.22975988700136 2228.269560044894,406.82184620329554 L 2288.6701318191385,338.50041652911926 C 2292.1093102831524,334.6098458917035 2298.6544967974787,333.3094065349983 2303.8455067915997,333.3094065349983 L 2467.518159380562,333.5351026216992 C 2486.584104990439,333.5565974870993 2500.4267983080945,350.795479537969 2500.1796073559935,368.8296716086419 C 2500.018395865493,380.16821310718774 2495.1605562850737,388.626442642122 2488.067250703045,396.7407543306548 L 2449.559199338789,440.74074380463264 L 2356.9485717625143,547.0865903715628 L 2169.2231647908557,762.8842915557354 C 2164.440557239336,768.3869770981577 2159.443001033816,771.6649440716709 2152.005777605386,769.1285499544606 C 2145.9549729952614,767.0542954433523 2142.644763723648,761.067975429428 2142.8167226468486,754.0284070108996 L 2144.0096876765533,705.0631036295016 L 2144.0204351092534,705.0416087641015"/><path class="wm-ink" d="M2640.1828658781606 770.0V70.0H2838.1828658781606V613.0H3172.1828658781606V770.0ZM3399.1828658781606 770.0V227.0H3184.1828658781606V70.0H3811.1828658781606V227.0H3597.1828658781606V770.0Z"/></g><g transform="translate(2933 -654)"><path class="wm-ink" d="M299.9114329390803 1424.0V920.0H695.1914329390804V1030.16H441.03143293908033V1313.84H704.5514329390803V1424.0ZM430.95143293908035 1221.68V1115.12H664.9514329390804V1221.68ZM825.7514329390802 1424.0V920.0H943.1114329390803L1221.0314329390803 1255.52H1165.5914329390803V920.0H1305.2714329390801V1424.0H1187.9114329390802L909.9914329390803 1088.48H965.4314329390802V1424.0ZM1448.0714329390803 1424.0V920.0H1843.3514329390803V1030.16H1589.1914329390802V1313.84H1852.7114329390802V1424.0ZM1579.1114329390803 1221.68V1115.12H1813.1114329390803V1221.68ZM1973.9114329390802 1424.0V920.0H2199.27143293908Q2309.43143293908 920.0 2368.83143293908 970.04Q2428.23143293908 1020.08 2428.23143293908 1106.48Q2428.23143293908 1163.3600000000001 2400.87143293908 1204.7600000000002Q2373.51143293908 1246.16 2323.47143293908 1268.12Q2273.43143293908 1290.08 2204.31143293908 1290.08H2053.1114329390803L2116.47143293908 1230.32V1424.0ZM2285.67143293908 1424.0 2160.39143293908 1240.4H2312.31143293908L2438.31143293908 1424.0ZM2116.47143293908 1245.44 2053.1114329390803 1179.92H2195.67143293908Q2240.31143293908 1179.92 2262.27143293908 1160.48Q2284.23143293908 1141.04 2284.23143293908 1106.48Q2284.23143293908 1071.2 2262.27143293908 1051.76Q2240.31143293908 1032.32 2195.67143293908 1032.32H2053.1114329390803L2116.47143293908 966.8ZM2800.71143293908 1434.08Q2740.95143293908 1434.08 2689.83143293908 1415.0Q2638.71143293908 1395.92 2601.63143293908 1360.6399999999999Q2564.55143293908 1325.36 2543.6714329390798 1277.48Q2522.79143293908 1229.6 2522.79143293908 1172.0Q2522.79143293908 1114.4 2543.6714329390798 1066.52Q2564.55143293908 1018.6400000000001 2601.99143293908 983.3600000000001Q2639.43143293908 948.08 2690.91143293908 929.0Q2742.39143293908 909.9200000000001 2803.59143293908 909.9200000000001Q2874.87143293908 909.9200000000001 2931.0314329390803 933.6800000000001Q2987.19143293908 957.44 3023.91143293908 1002.08L2933.19143293908 1084.16Q2907.27143293908 1056.08 2877.39143293908 1042.04Q2847.51143293908 1028.0 2810.79143293908 1028.0Q2778.39143293908 1028.0 2751.75143293908 1038.08Q2725.1114329390803 1048.16 2706.39143293908 1067.24Q2687.67143293908 1086.32 2677.23143293908 1112.6Q2666.79143293908 1138.88 2666.79143293908 1172.0Q2666.79143293908 1203.68 2677.23143293908 1230.3200000000002Q2687.67143293908 1256.96 2706.39143293908 1276.04Q2725.1114329390803 1295.12 2751.39143293908 1305.56Q2777.67143293908 1316.0 2809.35143293908 1316.0Q2841.03143293908 1316.0 2871.27143293908 1305.56Q2901.51143293908 1295.12 2932.47143293908 1269.92L3012.39143293908 1370.0Q2969.19143293908 1400.96 2912.31143293908 1417.52Q2855.43143293908 1434.08 2800.71143293908 1434.08ZM3012.39143293908 1370.0 2886.39143293908 1351.28V1161.2H3012.39143293908ZM3272.5514329390803 1424.0V1210.88L3305.67143293908 1296.56L3080.31143293908 920.0H3230.79143293908L3393.5114329390804 1192.88H3306.39143293908L3469.83143293908 920.0H3608.0714329390803L3383.43143293908 1296.56L3415.1114329390803 1210.88V1424.0Z"/></g></svg></a>
-  <nav class="quicknav quicknav-dock" aria-hidden="true">
+  <!-- El reparto 4+3 y el `data-qn-ini` son los MISMOS que la barra de abajo:
+       si se repagina una, se repagina la otra. Solo se parte en dos páginas
+       cuando no caben las siete (lo decide `initDockPaginado`, midiendo). -->
+  <nav class="quicknav quicknav-dock" aria-hidden="true" data-pagina="1">
+    <button type="button" class="qn-flecha qn-prev" tabindex="-1" aria-hidden="true">←</button>
     <a href="#nosotros" tabindex="-1" data-i18n="doc.a1">Nosotros</a>
     <a href="#problems" tabindex="-1" data-i18n="doc.a2">Puntos críticos</a>
     <a href="#what" tabindex="-1" data-i18n="doc.a3">Solución</a>
     <a href="#servicio" tabindex="-1" data-i18n="doc.a4">Servicio</a>
-    <a href="#tecnologia" tabindex="-1" data-i18n="doc.a5">Tecnología</a><a href="#productos" tabindex="-1" data-i18n="doc.a6">Productos</a><a href="#financiamiento" tabindex="-1" data-i18n="doc.navFin">Financiamiento</a>
+    <a href="#tecnologia" tabindex="-1" data-i18n="doc.a5">Tecnología</a>
+    <a href="#productos" tabindex="-1" data-i18n="doc.a6">Productos</a>
+    <a href="#financiamiento" tabindex="-1" data-i18n="doc.navFin">Financiamiento</a>
+    <button type="button" class="qn-flecha qn-next" tabindex="-1" aria-hidden="true">→</button>
   </nav>
   <div class="nav-actions">
     <button type="button" class="btn solid nav-desktop-cta" data-open-calc data-cursor data-i18n-html="doc.button1">Evalúa tu operación<span class="fill"></span></button>
@@ -2701,7 +2756,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
   <div class="wrap">
     <div class="sol-md">
       <!-- IZQUIERDA: título (fila 1) + lista (fila 2); la imagen (der) va en fila 2 → alineada con la lista -->
-      <h2 class="reveal" data-i18n-html="what.h21">La solución, <br><em>a tu medida</em>.</h2>
+      <h2 class="reveal" data-i18n-html="what.h21">La solución <br><em>a tu medida</em>.</h2>
       <div class="sol-list reveal">
         <p class="sol-hint" data-i18n="what.p1">Toca una solución para ver a detalle</p>
         <button class="sol-row" type="button" data-sol="0" aria-controls="solp-0">
@@ -3141,12 +3196,16 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
 
 <!-- PLANES DE FINANCIAMIENTO: cierra el argumento comercial. Va DESPUÉS de
      Productos (qué equipo) y ANTES de Resultados, porque el financiamiento es
-     la objeción que sigue a «ya sé qué necesito». Tono DÍA: corta el bloque
-     oscuro del final y separa visualmente el equipo de cómo se paga.
+     la objeción que sigue a «ya sé qué necesito».
+     TONO NOCHE desde el 2026-09-22 (pedido del cliente). Nació en día para
+     «cortar el bloque oscuro del final»; al pasarla a noche, todo desde
+     Tecnología en adelante queda oscuro de corrido. Si se vuelve a día hay que
+     tocar TAMBIÉN `TONE_BY_SECTION` (lista fija: sin la clave cae a 'night' en
+     silencio y los overlays fijos usan tinta equivocada).
      Los tres modelos ya se mencionaban sueltos —una viñeta en Servicio, dos
      respuestas del FAQ y un enlace del pie—; esta losa pasa a ser el lugar
      único donde se explican, y esas menciones apuntan aquí. -->
-<section id="financiamiento" class="section" data-theme="day" aria-label="Planes de financiamiento" data-i18n-attr-aria-label="financiamiento.aria-label1">
+<section id="financiamiento" class="section" data-theme="night" aria-label="Planes de financiamiento" data-i18n-attr-aria-label="financiamiento.aria-label1">
   <div class="wrap">
     <div class="prob-head">
       <h2 class="reveal" data-i18n-html="financiamiento.h21">El sistema es tuyo. <em>Elige cómo pagarlo</em>.</h2>
@@ -3178,7 +3237,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
       </div>
 
       <div class="fin-card reveal">
-        <div class="fin-media"><img src="/public/fin-arrendamiento.webp" alt="Contenedor BESS sobre un zócalo dividido en segmentos iguales: la inversión repartida en cuotas." width="540" height="470" loading="lazy" decoding="async" data-i18n-attr-alt="financiamiento.alt2"></div>
+        <div class="fin-media"><img src="/public/fin-arrendamiento.webp" alt="Contenedor BESS sobre un zócalo al que le faltan segmentos: la inversión repartida en cuotas, solo pagas una parte por adelantado." width="540" height="470" loading="lazy" decoding="async" data-i18n-attr-alt="financiamiento.alt2"></div>
         <div class="fin-body">
           <div class="fin-k" data-i18n="financiamiento.div2">Arrendamiento</div>
           <h3 data-i18n="financiamiento.h32">Inversión inicial mínima</h3>
@@ -3192,7 +3251,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
         <div class="fin-body">
           <div class="fin-k" data-i18n="financiamiento.div3">BESS as a Service</div>
           <h3 data-i18n="financiamiento.h33">Cero inversión inicial</h3>
-          <p data-i18n="financiamiento.p4">Loialt diseña, instala y opera el sistema, y se cobra con los ahorros que genera. Tú no pones capital ni te encargas de la operación.</p>
+          <p data-i18n="financiamiento.p4">Loialt diseña, instala, opera el sistema y se cobra con los ahorros que genera. Tú no pones capital ni te encargas de la operación.</p>
           <div class="fin-dato" data-i18n="financiamiento.dato3"></div>
         </div>
       </div>
@@ -3339,7 +3398,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
 <!-- ================= SCRIPTS ================= -->
 <!-- i18n ANTES de GSAP: el idioma debe estar aplicado cuando SplitText parta
      los títulos y el pager mida las losas, o quedarían sobre el texto viejo. -->
-<script src="./public/i18n.js?v=17"></script>
+<script src="./public/i18n.js?v=19"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/SplitText.min.js"></script>
@@ -3661,6 +3720,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
       if(halo) gsap.set(halo, {opacity:0, scale:.8, transformOrigin:'50% 50%'});
       gsap.set(cellsOn, {opacity:0});
       var tlBat = gsap.timeline({ paused:true });
+      var tweensApagado = [];   // los de LOIALT_BATTERY_OFF, para poder matarlos por referencia
       tlBat.to(cf, {attr:{y:60, height:186}, duration:.9, ease:'power1.inOut'}, 0);
       // celdas: se encienden de abajo hacia arriba al paso de la barra de carga
       tlBat.to(cellsOn, {opacity:1, duration:.3, stagger:.19, ease:'power1.inOut'}, .05);
@@ -3698,6 +3758,31 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
         }, AT);
       }
       window.LOIALT_BATTERY_ON  = function(){
+        /* ⚠️ MATAR PRIMERO LOS TWEENS DEL APAGADO, Y SOLO ESOS. El apagado de
+           OFF dura 0.35s; si se vuelve a entrar a la losa antes de que termine,
+           esos tweens se crearon DESPUÉS que los de `tlBat`, así que se
+           renderizan al final y GANAN: la barra carga pero las celdas se quedan
+           apagadas para siempre. Importa desde el 2026-09-22, cuando la
+           secuencia pasó a reiniciarse en CADA salida de la losa; antes este
+           camino casi no se recorría.
+           Se matan POR REFERENCIA y no con `gsap.killTweensOf(cf, cellsOn…)`:
+           eso barre por TARGET y se lleva también los hijos de `tlBat`, que
+           animan los mismos elementos. MEDIDO: con el kill por target las
+           celdas encendían pero la barra de carga se quedaba clavada en 0,
+           porque el tween de `attr` no revive con `invalidate()`. */
+        tweensApagado.forEach(function(t){ t.kill(); }); tweensApagado.length = 0;
+        /* ...y FIJAR el estado de partida a mano, sin confiar en lo que dejara
+           el apagado. `invalidate()` re-graba el valor inicial de cada tween a
+           partir del estado que encuentre; si el apagado se mató a medio camino
+           —o su última escritura aún no había llegado— ese estado es cualquiera,
+           y el tween de las celdas podía quedar grabado como 0→0: completaba sin
+           mover nada y la batería se quedaba a oscuras. Era INTERMITENTE (1 de
+           cada 3 recorridos), que es justo lo que lo hacía difícil de ver.
+           Son los mismos valores del `gsap.set` de arriba, que es el estado
+           "apagada" canónico. */
+        gsap.set(cf, {attr:{y:246, height:0}});
+        gsap.set(cellsOn, {opacity:0});
+        if(halo) gsap.set(halo, {opacity:0, scale:.8, transformOrigin:'50% 50%'});
         tlBat.invalidate().restart();
         // móvil: carga 1.5× más rápida — ágil sin sentirse apresurada
         tlBat.timeScale(window.matchMedia('(max-width:900px)').matches ? 1.5 : 1);
@@ -3711,9 +3796,18 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
         if(visEl) visEl.classList.remove('bat-charged');
         stopFlowSparks();
         document.dispatchEvent(new CustomEvent('loialt:battery', {detail:'off'}));
-        gsap.to(cf, {attr:{y:246, height:0}, duration:.35, ease:'power1.in', overwrite:true});
-        gsap.to(cellsOn, {opacity:0, duration:.35, ease:'power1.in', overwrite:true});
-        if(halo) gsap.to(halo, {opacity:0, scale:.8, duration:.35, ease:'power1.in', overwrite:true});
+        /* ⚠️ SIN `overwrite:true`, y es la diferencia entre que la batería se
+           vuelva a encender o no. `overwrite` barre por TARGET, así que mataba
+           los hijos de `tlBat` que animan estos mismos elementos — y de esos,
+           el de las CELDAS no revivía con `invalidate()`: MEDIDO, tras el primer
+           reinicio la barra cargaba y las tarjetas entraban, pero las cuatro
+           celdas se quedaban en opacidad 0 para siempre.
+           Ya no hace falta: la línea de tiempo queda pausada aquí arriba (así
+           que no hay pelea) y `LOIALT_BATTERY_ON` mata estos tres tweens por
+           referencia antes de reiniciarla. */
+        tweensApagado.push(gsap.to(cf, {attr:{y:246, height:0}, duration:.35, ease:'power1.in'}));
+        tweensApagado.push(gsap.to(cellsOn, {opacity:0, duration:.35, ease:'power1.in'}));
+        if(halo) tweensApagado.push(gsap.to(halo, {opacity:0, scale:.8, duration:.35, ease:'power1.in'}));
       };
       gsap.from('#problems .battery-vis .cell', {yPercent:40, opacity:0, duration:.8, ease:'back.out(1.6)', stagger:.09,
         scrollTrigger:{ trigger:'#problems .battery-vis', start:'top 80%' }});
@@ -3881,6 +3975,247 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
      el viewport al scrollear y dispararía re-cálculos en plena scrolleada (ya
      pasó una vez y fue el regresor de rendimiento). Se recalcula por eventos
      puntuales: carga, fuentes listas, resize y cambio de clase del nav. */
+  /* ---------- DOCK DEL NAV: paginado SOLO si no caben las siete ----------
+     El mismo esquema que la barra de abajo en móvil (páginas de 4+3 con
+     flechas), pero aquí QUIÉN DECIDE ES UNA MEDICIÓN, no una media query.
+     Eso es deliberado: lo que sustituye eran dos escalones de compresión por
+     ancho, y el fallo que vino a arreglarse lo causaba justo el corte escrito
+     a mano — a 1300px el hueco contra el wordmark medía 95px y a 1301px, seis.
+     Midiendo no hay acantilado, y además aguanta lo que una media query no
+     puede prever: el otro idioma (en español los enlaces son más largos), el
+     zoom del navegador, una fuente que carga tarde o una entrada más. */
+  function initDockPaginado(){
+    var dock = document.querySelector('.quicknav-dock');
+    var nav  = document.querySelector('header.nav');
+    if(!dock || !nav) return;
+    var wm   = nav.querySelector('.brand-wm') || nav.querySelector('.brand');
+    var cta  = nav.querySelector('.nav-actions');
+    var enls = [].slice.call(dock.querySelectorAll('a'));
+    var flechas = [].slice.call(dock.querySelectorAll('.qn-flecha'));
+    if(!enls.length) return;
+    var AIRE = 28;                                 // respiro a cada lado
+    var mqEscritorio = window.matchMedia('(min-width:901px)');   // gate VIVO
+    var paginas = [], actual = 0, ultimoActivo = null;
+
+    /* EL HUECO ÚTIL NO ES EL ESPACIO TOTAL. El dock va `left:50%` con
+       `translateX(-50%)`, o sea centrado en la VENTANA — pero el wordmark come
+       por la izquierda y el CTA por la derecha, y no son simétricos. Así que lo
+       que cabe lo decide el lado MENOR, duplicado. Medirlo como espacio total
+       da de más: a 1366px salían 792px de necesidad contra 797 «disponibles» y
+       el hueco real quedaba en 17px por la izquierda y 44 por la derecha. */
+    function anchoUtil(){
+      var centro = window.innerWidth / 2;
+      var izq = wm  ? wm.getBoundingClientRect().right : 0;
+      var der = cta ? cta.getBoundingClientRect().left : window.innerWidth;
+      return Math.max(0, Math.min(centro - (izq + AIRE), (der - AIRE) - centro)) * 2;
+    }
+
+    // Reparto equilibrado: 7 en 3 páginas da 3+2+2, no 3+3+1.
+    function repartir(n, cap){
+      var out = [], i = 0, quedan = n;
+      var np = Math.max(1, Math.ceil(n / cap));
+      for(var pag = np; pag > 0; pag--){
+        var cuantos = Math.ceil(quedan / pag);
+        out.push(enls.slice(i, i + cuantos));
+        i += cuantos; quedan -= cuantos;
+      }
+      return out;
+    }
+
+    function pintar(){
+      var hayVarias = paginas.length > 1;
+      dock.classList.toggle('qn-paginado', hayVarias);
+      enls.forEach(function(a){ a.style.display = ''; });
+      if(!hayVarias) return;
+      enls.forEach(function(a){ a.style.display = 'none'; });
+      paginas[actual].forEach(function(a){ a.style.display = ''; });
+      // El separador cuelga del ::before de cada <a> que no sea el primero de su
+      // tipo; en una página que no empieza por el primero, aparecería una rayita
+      // suelta delante. Se marca el primero visible para quitársela por CSS.
+      enls.forEach(function(a){ a.removeAttribute('data-qn-ini'); });
+      if(actual > 0) paginas[actual][0].setAttribute('data-qn-ini','');
+      dock.setAttribute('data-pagina', String(actual + 1));
+      dock.classList.toggle('qn-primera', actual === 0);
+      dock.classList.toggle('qn-ultima',  actual === paginas.length - 1);
+    }
+
+    function medir(){
+      if(!mqEscritorio.matches){
+        dock.classList.remove('qn-paginado');
+        enls.forEach(function(a){ a.style.display = ''; });
+        paginas = [enls]; actual = 0; ultimoActivo = null;
+        return;
+      }
+      /* Se mide con TODO visible y sin paginar, porque lo que hace falta es el
+         ancho natural de cada palabra. Ida y vuelta en la misma tarea síncrona:
+         no hay pintado entre medias, así que no parpadea. */
+      var antes = dock.className, antesPag = dock.getAttribute('data-pagina');
+      dock.classList.remove('qn-paginado');
+      enls.forEach(function(a){ a.style.display = ''; });
+      var util = anchoUtil();
+      var total = dock.scrollWidth;
+      var anchos = enls.map(function(a){ return a.getBoundingClientRect().width; });
+      var gap = enls.length > 1
+        ? Math.max(0, enls[1].getBoundingClientRect().left - enls[0].getBoundingClientRect().right)
+        : 0;
+      var anchoFlechas = flechas.length
+        ? flechas.reduce(function(t,b){ return t + 24 + gap; }, 0)   // 1.5rem cada una
+        : 0;
+
+      if(total <= util){
+        paginas = [enls];
+      } else {
+        // Cuántas caben por página, ya descontando el sitio de las dos flechas.
+        var margen = util - anchoFlechas, suma = 0, cap = 0;
+        for(var i = 0; i < anchos.length; i++){
+          var siguiente = suma + anchos[i] + (cap ? gap : 0);
+          if(siguiente > margen) break;
+          suma = siguiente; cap++;
+        }
+        paginas = repartir(enls.length, Math.max(1, cap));
+      }
+      if(actual >= paginas.length) actual = paginas.length - 1;
+      dock.className = antes;
+      if(antesPag) dock.setAttribute('data-pagina', antesPag);
+      pintar();
+      seguirActivo(true);
+    }
+
+    /* La página sigue al enlace ACTIVO: si la sección en la que estás cae en
+       otra página, la barra salta sola para que su palabra se vea. Solo actúa
+       cuando el activo CAMBIA, así que una pulsación manual de la flecha se
+       respeta hasta que cambies de sección. */
+    function seguirActivo(forzar){
+      if(paginas.length < 2) return;
+      var act = dock.querySelector('a.active');
+      if(!act){ ultimoActivo = null; return; }
+      var href = act.getAttribute('href');
+      if(!forzar && href === ultimoActivo) return;
+      ultimoActivo = href;
+      for(var i = 0; i < paginas.length; i++){
+        if(paginas[i].indexOf(act) >= 0){
+          if(i !== actual){ actual = i; pintar(); }
+          return;
+        }
+      }
+    }
+
+    flechas.forEach(function(b){
+      b.addEventListener('click', function(){
+        var d = b.classList.contains('qn-next') ? 1 : -1;
+        var n = actual + d;
+        if(n < 0 || n >= paginas.length) return;
+        actual = n; ultimoActivo = 'manual'; pintar();
+      });
+    });
+
+    medir();
+    // La fuente cambia el ancho de las palabras: hay que volver a medir.
+    if(document.fonts && document.fonts.ready) document.fonts.ready.then(medir);
+    var t; window.addEventListener('resize', function(){
+      clearTimeout(t); t = setTimeout(medir, 150);
+    });
+    // El nav cambia al pasar a `.scrolled` (aparecen logo y CTA), que son justo
+    // las dos piezas contra las que se mide el hueco.
+    new MutationObserver(medir).observe(nav, { attributes:true, attributeFilter:['class'] });
+    window.addEventListener('scroll', function(){ seguirActivo(false); }, {passive:true});
+    window.LOIALT_DOCK = medir;
+  }
+
+  /* ---------- ESCALERA DE FINANCIAMIENTO: el paso se MIDE ----------
+     El cliente pidió «la mayor separación posible, que se ajuste dependiendo
+     del tamaño de pantalla». Subir el `clamp()` a ojo es justo lo que ya rompió
+     esta losa antes: pasado cierto punto la 3ª tarjeta se mete bajo el selector
+     de idioma y la 1ª bajo la píldora de Redes.
+
+     Así que en vez de adivinar, se mide cuánto aire sobra y se reparte. Es
+     SEGURO POR CONSTRUCCIÓN, no por pruebas: la función nunca asigna más de lo
+     que acaba de medir como libre, así que no puede desbordar.
+
+     Cómo: el alto del contenido crece de forma LINEAL con el paso (la 3ª
+     tarjeta baja, y el `margin-bottom` del eje también depende de él). Dos
+     sondas determinan esa recta —no hace falta razonar si el factor es 1× o
+     2×, se mide— y de ahí se despeja el paso que llena el hueco justo.
+
+     Válvula: `?sin-escalera` en la URL la desactiva y deja los clamp del CSS. */
+  function initEscaleraFin(){
+    var sec = document.getElementById('financiamiento');
+    if(!sec) return;
+    if(location.search.indexOf('sin-escalera') >= 0 || location.hash.indexOf('sin-escalera') >= 0) return;
+    var mqDesk = window.matchMedia('(min-width:901px)');   // gate VIVO
+    var AIRE = 10;          // respiro para no dejarlo pegado al límite medido
+    var SONDA = 40;         // paso de prueba, en px
+    var ultimo = -1;
+
+    // Sonda de 100svh: `innerHeight` no es lo mismo que `svh` y la losa se
+    // dimensiona con `min-height:100svh`.
+    var reg = document.createElement('div');
+    reg.setAttribute('aria-hidden','true');
+    reg.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:100svh;visibility:hidden;pointer-events:none';
+    document.body.appendChild(reg);
+
+    // Extensión VISUAL real del contenido: la unión de las cajas de la cabecera,
+    // el eje y las tres tarjetas. Se mide así y no con la altura del `.wrap`
+    // porque la 1ª tarjeta lleva `margin-top` NEGATIVO y se sale de él.
+    function alto(){
+      var piezas = [sec.querySelector('.prob-head'), sec.querySelector('.fin-eje')]
+        .concat([].slice.call(sec.querySelectorAll('.fin-card')));
+      var arriba = Infinity, abajo = -Infinity;
+      piezas.forEach(function(el){
+        if(!el) return;
+        var r = el.getBoundingClientRect();
+        if(r.height === 0) return;
+        if(r.top < arriba) arriba = r.top;
+        if(r.bottom > abajo) abajo = r.bottom;
+      });
+      return (abajo > arriba) ? (abajo - arriba) : 0;
+    }
+
+    function medir(){
+      if(!mqDesk.matches){ sec.style.removeProperty('--fin-libre'); ultimo = -1; return; }
+      var cs = getComputedStyle(sec);
+      var util = reg.getBoundingClientRect().height
+               - (parseFloat(cs.paddingTop) || 0)
+               - (parseFloat(cs.paddingBottom) || 0);
+      if(util <= 0) return;
+
+      // Dos sondas, en una sola tarea síncrona: no hay pintado entre medias,
+      // así que no parpadea.
+      sec.style.setProperty('--fin-libre', '0px');
+      var t0 = alto();
+      sec.style.setProperty('--fin-libre', SONDA + 'px');
+      var t1 = alto();
+      var pend = (t1 - t0) / SONDA;
+
+      var paso;
+      if(pend <= 0.01){
+        paso = SONDA;               // el paso no afecta al alto: no hay nada que repartir
+      } else {
+        paso = (util - AIRE - t0) / pend;
+      }
+      if(!isFinite(paso) || paso < 0) paso = 0;
+      paso = Math.round(paso);
+      if(paso === ultimo){ sec.style.setProperty('--fin-libre', paso + 'px'); return; }
+      ultimo = paso;
+      // El clamp del CSS aplica piso y techo; aquí solo se entrega el número.
+      sec.style.setProperty('--fin-libre', paso + 'px');
+      if(location.hash.indexOf('escalera') >= 0){
+        console.log('[escalera] util', Math.round(util), '· contenido', Math.round(t0),
+                    '· pendiente', pend.toFixed(2), '→ paso', paso + 'px',
+                    '· aplicado', getComputedStyle(sec).getPropertyValue('--fin-paso').trim());
+      }
+    }
+
+    medir();
+    if(document.fonts && document.fonts.ready) document.fonts.ready.then(medir);
+    var t; window.addEventListener('resize', function(){
+      clearTimeout(t); t = setTimeout(medir, 150);
+    });
+    // NADA de ResizeObserver sobre el body: en móvil la barra de URL redimensiona
+    // el viewport al scrollear y eso ya fue un regresor de rendimiento (2026-08-19).
+    window.LOIALT_ESCALERA = medir;
+  }
+
   function initGuardiaNav(){
     var nav = document.querySelector('header.nav');
     if(!nav) return;
@@ -3957,7 +4292,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
     // cinco preguntas a quien solo quiere escribir es fricción sin sentido.
     var MODAL_COPY = {
       ahorro:   { title: T('modal.titulo.calc', '¿Tu operación califica?'),
-                  intro: T('modal.sub.calc', 'Nuestros sistemas están dimensionados para operaciones de consumo intensivo. Responde 5 preguntas y lo confirmamos contigo.') },
+                  intro: T('modal.sub.calc', 'Nuestros sistemas están dimensionados para operaciones de consumo intensivo. Responde 2 preguntas y lo confirmamos contigo.') },
       contacto: { title: T('modal.titulo.contacto', 'Hablemos de tu proyecto'),
                   intro: T('modal.sub.contacto', 'Cuéntanos tu caso y un especialista de Loialt te contacta con la mejor solución para tu operación.') }
     };
@@ -4021,7 +4356,6 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
       var T_GIRO = 0.7, T_TXT = 0.6075, DESPL = 40, ROT = 45;
 
       function campo(n){ var c = caras[n].getAttribute('data-campo'); return c ? form.querySelector('[name="' + c + '"]') : null; }
-      function codigo(n){ var c = campo(n); return (c && c.getAttribute('data-v')) || ''; }
 
       // Se mide cada capa por separado: los títulos son de 1-2 líneas y las
       // tarjetas van de 3 a 6 opciones. Solo funciona con el panel VISIBLE.
@@ -4120,12 +4454,21 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
 
       /* CLASIFICACIÓN INTERNA. NO se le enseña al visitante: viaja en el envío
          para que Loialt ordene los prospectos antes de calcular el ahorro.
-         Los tramos alto/medio/bajo son los de la pregunta 3: por encima de
-         $900,000 MXN al mes, entre $565,000 y $900,000, y por debajo del
-         mínimo de $565,000. */
+         Los tramos alto/medio/bajo son los de la pregunta del gasto: por encima
+         de $1,000,000 MXN al mes, entre $600,000 y $1,000,000, y por debajo del
+         mínimo de $600,000.
+         ⚠️ Se lee POR NOMBRE DE CAMPO, no por posición. Antes era `codigo(1)` y
+         `codigo(2)` —los índices de las caras— y al recortar el cuestionario de
+         5 preguntas a 2 (2026-09-22) esos índices dejaron de apuntar a donde
+         creían: la clasificación habría salido vacía sin dar ningún error.
+         Así, reordenar o añadir preguntas no puede volver a romperlo. */
+      function codigoDe(nombre){
+        var c = form.querySelector('[name="' + nombre + '"]');
+        return (c && c.getAttribute('data-v')) || '';
+      }
       function clasificar(){
         var c = form.querySelector('[name=calificacion]'); if(!c) return;
-        var tar = codigo(1), gas = codigo(2), v = '';
+        var tar = codigoDe('tarifa-cfe'), gas = codigoDe('gasto-mensual'), v = '';
         if(!tar && !gas)                              v = '';
         else if(tar === 'otra' || gas === 'bajo')     v = 'Baja — fuera del perfil de consumo';
         else if(tar === 'horaria' && gas === 'alto')  v = 'Alta — tarifa horaria y consumo alto';
@@ -4271,12 +4614,12 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
           ['Apellido', (form.querySelector('[name=apellido]')||{}).value],
           ['Empresa',  (form.querySelector('#mf-empresa')||{}).value],
           ['Giro',     (form.querySelector('#mf-giro')||{}).value],
-          ['Teléfono', (form.querySelector('#mf-tel')||{}).value]
+          ['Teléfono', (form.querySelector('#mf-tel')||{}).value],
+          ['Zona',     (form.querySelector('#mf-region')||{}).value]
         ];
         // Las respuestas del cuestionario TAMBIÉN van al correo de respaldo: si el
         // POST falló, ese correo es el único canal que queda y llegaría cojo.
-        var ETIQ = { 'region':'Región', 'tarifa-cfe':'Tarifa CFE', 'gasto-mensual':'Gasto mensual',
-                     'prioridad':'Prioridad', 'cargos-por-demanda':'Cargos por demanda',
+        var ETIQ = { 'tarifa-cfe':'Tarifa CFE', 'gasto-mensual':'Gasto mensual',
                      'calificacion':'Calificación' };
         Object.keys(ETIQ).forEach(function(k){
           var el = form.querySelector('[name="' + k + '"]');
@@ -4946,6 +5289,8 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
         initReveals(); initPeak(); 
       }
       initGuardiaNav();   // PRIMERO: fija la franja del nav antes de medir nada
+      initDockPaginado();
+      initEscaleraFin();   // depende del padding que fija --zona-sup/-inf
       initCalc(); initCalcModal(); initFAQ(); initFAQSchema(); initProdCarr(); initCritSequence(); initSol(); initSolReveal(); initSvc(); initTechCarousel(); initMarqueeMobile(); initSocialFab();
       if(hasGSAP){
         if(document.fonts && document.fonts.ready){ document.fonts.ready.then(function(){ ScrollTrigger.refresh(); }); }
@@ -4961,7 +5306,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
      (grano, viñeta, quicknav, nav) y el color de la barra del navegador móvil. -->
 <script>
   (function(){
-    var TONE_BY_SECTION = { hero:'night', nosotros:'night', problems:'night', what:'day', cta:'day', peak:'night', servicio:'night', tecnologia:'day', productos:'night', financiamiento:'day', metrics:'night', faq:'night' };
+    var TONE_BY_SECTION = { hero:'night', nosotros:'night', problems:'night', what:'day', cta:'day', peak:'night', servicio:'night', tecnologia:'day', productos:'night', financiamiento:'night', metrics:'night', faq:'night' };
     var secs = [].slice.call(document.querySelectorAll('section[id]'));
     if(!secs.length) return;
     var meta = document.getElementById('metaTheme'), el = document.documentElement;
@@ -4988,7 +5333,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
 <script type="module">
   import { initLogo3D } from './public/loialt-logo-3d.js?v=8';
   import { initLettermark3D } from './public/loialt-lettermark-3d.js?v=6';
-  import { initLoialtAnim } from './public/loialt-anim.js?v=138';
+  import { initLoialtAnim } from './public/loialt-anim.js?v=143';
 
   const registry = {};
   const logoEl = document.getElementById('heroLogo3D');
@@ -5010,7 +5355,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
   const loadTune = () => {
     if (tuneLoaded){ const p = document.getElementById('loialtTune'); if (p) p.style.display = ''; return; }
     tuneLoaded = true;
-    import('./public/loialt-tune.js?v=72').then(m => m.initTune(anim));
+    import('./public/loialt-tune.js?v=75').then(m => m.initTune(anim));
   };
   if (/tune/.test(location.hash)) loadTune();
   window.addEventListener('hashchange', () => { if (/tune/.test(location.hash)) loadTune(); });
@@ -5037,11 +5382,11 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
     <h3 id="calcModalTitle" data-i18n="doc.h31">¿Tu operación califica?</h3>
     <div class="modal-body">
       <div class="mf-live" id="mfLive">
-      <p class="mf-intro" data-i18n="doc.p3">Nuestros sistemas están dimensionados para operaciones de consumo intensivo. Responde 5 preguntas y lo confirmamos contigo.</p>
+      <p class="mf-intro" data-i18n="doc.p3">Nuestros sistemas están dimensionados para operaciones de consumo intensivo. Responde 2 preguntas y lo confirmamos contigo.</p>
 
       <!-- ============================================================
            CUESTIONARIO DE CALIFICACIÓN (2026-09-14)
-           Las 5 preguntas van EN EL MARKUP, ocultas por CSS — no se inyectan
+           Las preguntas van EN EL MARKUP, ocultas por CSS — no se inyectan
            por JS. Es lo único que permite traducirlas con `data-i18n`:
            `aplicar()` de i18n.js no observa el DOM y NO alcanza nada creado
            en caliente.
@@ -5051,7 +5396,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
            ============================================================ -->
       <div class="mf-quiz" id="mfQuiz">
         <div class="quiz-top">
-          <span class="quiz-cuenta" id="quizCuenta" aria-live="polite" role="status">Pregunta 1 de 5</span>
+          <span class="quiz-cuenta" id="quizCuenta" aria-live="polite" role="status">Pregunta 1 de 2</span>
           <span class="quiz-barra" aria-hidden="true"><i id="quizBarra"></i></span>
         </div>
 
@@ -5060,69 +5405,38 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
              preguntas van en el markup, ocultas por CSS, no se inyectan por
              JS: es lo único que permite traducirlas con `data-i18n`. -->
         <div class="quiz-titulos" id="quizTitulos">
-          <h4 class="quiz-p activo" tabindex="-1" data-i18n="quiz.q1">¿En qué región opera tu empresa?</h4>
-          <h4 class="quiz-p" tabindex="-1" data-i18n="quiz.q2">¿En qué tarifa de CFE está registrada tu operación?</h4>
-          <h4 class="quiz-p" tabindex="-1" data-i18n="quiz.q3">¿Cuánto paga de electricidad al mes?</h4>
-          <h4 class="quiz-p" tabindex="-1" data-i18n="quiz.q4">¿Cuál es tu prioridad en energía?</h4>
-          <h4 class="quiz-p" tabindex="-1" data-i18n="quiz.q5">¿Pagas cargos por demanda o penalizaciones en tu recibo?</h4>
-          <h4 class="quiz-p" tabindex="-1" data-i18n="quiz.finTitulo">¡Gracias por responder!</h4>
+          <h4 class="quiz-p activo" tabindex="-1" data-i18n="quiz.q1">¿En qué tarifa de CFE está registrada tu operación?</h4>
+          <h4 class="quiz-p" tabindex="-1" data-i18n="quiz.q2">¿Cuánto paga de electricidad al mes?</h4>
+          <h4 class="quiz-p" tabindex="-1" data-i18n="quiz.finTitulo">¿Cómo te contactamos?</h4>
         </div>
 
         <div class="quiz-caja">
           <div class="quiz-flip" id="quizFlip">
-            <div class="quiz-cara lado-a" data-campo="region">
+            <div class="quiz-cara lado-a" data-campo="tarifa-cfe">
               <div class="seg quiz-ops">
-                <button type="button" data-v="norte"   data-i18n="quiz.q1.o1">Norte / Noreste</button>
-                <button type="button" data-v="bajio"   data-i18n="quiz.q1.o2">Bajío / Centro-Occidente</button>
-                <button type="button" data-v="valle"   data-i18n="quiz.q1.o3">Valle de México / Centro-Sur</button>
-                <button type="button" data-v="sureste" data-i18n="quiz.q1.o4">Sureste / Península</button>
-                <button type="button" data-v="bc"      data-i18n="quiz.q1.o5">Baja California</button>
-                <button type="button" data-v="otra"    data-i18n="quiz.q1.o6">Otra región</button>
+                <button type="button" data-v="horaria" data-i18n="quiz.q1.o1">Tarifa horaria (GDMTH, DIST o DIT)</button>
+                <button type="button" data-v="otra"    data-i18n="quiz.q1.o2">Otra tarifa (comercial básica, residencial…)</button>
+                <button type="button" data-v="nose"    data-i18n="quiz.q1.o3">No sé cuál es mi tarifa</button>
               </div>
             </div>
 
-            <div class="quiz-cara" data-campo="tarifa-cfe">
-              <div class="seg quiz-ops">
-                <button type="button" data-v="horaria" data-i18n="quiz.q2.o1">Tarifa horaria (GDMTH, DIST o DIT)</button>
-                <button type="button" data-v="otra"    data-i18n="quiz.q2.o2">Otra tarifa (comercial básica, residencial…)</button>
-                <button type="button" data-v="nose"    data-i18n="quiz.q2.o3">No sé cuál es mi tarifa</button>
-              </div>
-            </div>
-
-            <!-- UMBRALES: $565,000 MXN al mes es el mínimo para que un BESS tenga
-                 sentido, y $900,000 marca el caso de prioridad alta. Se separan a
-                 propósito de las cifras redondas del cuestionario de referencia
-                 que compartió el cliente ($600,000 / $1,000,000): son de la
-                 competencia y no conviene repetirlas. Siguen sin confirmar por
-                 Loialt — anotado en PENDIENTES.md. -->
+            <!-- UMBRALES: $600,000 MXN al mes es el mínimo para que un BESS tenga
+                 sentido, y $1,000,000 marca el caso de prioridad alta. Cifras fijadas
+                 por Loialt el 2026-09-22; sustituyen a los $565,000 / $900,000 que se
+                 habían inventado para no repetir las del cuestionario de referencia.
+                 Si cambian, hay que tocar TAMBIÉN los umbrales de `clasificar()`. -->
             <div class="quiz-cara" data-campo="gasto-mensual">
               <div class="seg quiz-ops">
-                <button type="button" data-v="alto"  data-i18n="quiz.q3.o1">Más de $900,000 MXN al mes</button>
-                <button type="button" data-v="medio" data-i18n="quiz.q3.o2">Entre $565,000 y $900,000 MXN</button>
-                <button type="button" data-v="bajo"  data-i18n="quiz.q3.o3">Menos de $565,000 MXN</button>
-                <button type="button" data-v="nose"  data-i18n="quiz.q3.o4">No tengo el dato a la mano</button>
-              </div>
-            </div>
-
-            <div class="quiz-cara" data-campo="prioridad">
-              <div class="seg quiz-ops">
-                <button type="button" data-v="costo"       data-i18n="quiz.q4.o1">Reducir el costo</button>
-                <button type="button" data-v="continuidad" data-i18n="quiz.q4.o2">Garantizar la continuidad de la operación</button>
-                <button type="button" data-v="ambas"       data-i18n="quiz.q4.o3">Las dos cosas</button>
-              </div>
-            </div>
-
-            <div class="quiz-cara" data-campo="cargos-por-demanda">
-              <div class="seg quiz-ops">
-                <button type="button" data-v="si"    data-i18n="quiz.q5.o1">Sí, y pesan en el recibo</button>
-                <button type="button" data-v="quiza" data-i18n="quiz.q5.o2">Creo que sí, pero no lo tenemos claro</button>
-                <button type="button" data-v="no"    data-i18n="quiz.q5.o3">No / No lo sé</button>
+                <button type="button" data-v="alto"  data-i18n="quiz.q2.o1">Más de $1,000,000 MXN al mes</button>
+                <button type="button" data-v="medio" data-i18n="quiz.q2.o2">Entre $600,000 y $1,000,000 MXN</button>
+                <button type="button" data-v="bajo"  data-i18n="quiz.q2.o3">Menos de $600,000 MXN</button>
+                <button type="button" data-v="nose"  data-i18n="quiz.q2.o4">No tengo el dato a la mano</button>
               </div>
             </div>
 
             <!-- CARA DE CIERRE: entra con el mismo giro que una pregunta más. -->
             <div class="quiz-cara quiz-fin">
-              <p data-i18n="quiz.fin">Con esto ya podemos calcular tu ahorro. Complétanos los datos de abajo y te contactamos con el número.</p>
+              <p data-i18n="quiz.fin">Con esto ya podemos calcular tu ahorro. Déjanos tus datos aquí abajo y te contactamos con el número.</p>
               <button type="button" id="quizReabrir" data-i18n="quiz.cambiar">Cambiar mis respuestas</button>
             </div>
           </div>
@@ -5174,9 +5488,27 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
             </select>
           </div>
         </div>
-        <div class="mf-field">
-          <label for="mf-tel" data-i18n="doc.label5">Teléfono</label>
-          <input type="tel" id="mf-tel" name="telefono" placeholder="Teléfono" autocomplete="tel" data-cursor data-i18n-attr-placeholder="doc.placeholder5">
+        <div class="mf-two">
+          <div class="mf-field">
+            <label for="mf-tel" data-i18n="doc.label5">Teléfono</label>
+            <input type="tel" id="mf-tel" name="telefono" placeholder="Teléfono" autocomplete="tel" data-cursor data-i18n-attr-placeholder="doc.placeholder5">
+          </div>
+          <!-- ZONA DEL PAÍS. Era la 1ª pregunta del cuestionario y bajó aquí el
+               2026-09-22 (pedido del cliente): es un dato de contacto, no de
+               calificación — `clasificar()` nunca lo usó. Mantiene `name="region"`
+               para no romper el formato del aviso de Netlify. -->
+          <div class="mf-field">
+            <label for="mf-region" data-i18n="doc.label-region">Zona del país</label>
+            <select id="mf-region" name="region" data-cursor>
+              <option value="" selected disabled data-i18n="doc.region0">Selecciona tu zona</option>
+              <option value="Norte / Noreste" data-i18n="doc.region1">Norte / Noreste</option>
+              <option value="Bajío / Centro-Occidente" data-i18n="doc.region2">Bajío / Centro-Occidente</option>
+              <option value="Valle de México / Centro-Sur" data-i18n="doc.region3">Valle de México / Centro-Sur</option>
+              <option value="Sureste / Península" data-i18n="doc.region4">Sureste / Península</option>
+              <option value="Baja California" data-i18n="doc.region5">Baja California</option>
+              <option value="Otra región" data-i18n="doc.region6">Otra región</option>
+            </select>
+          </div>
         </div>
         <!-- ADJUNTAR EL RECIBO. Netlify registra este campo escaneando el HTML EN EL
              DESPLIEGUE, así que tiene que estar en el markup estático, no inyectarse.
@@ -5199,11 +5531,8 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
              PRIMER campo del formulario. Cuando estaban arriba, todos los leads se
              listaban como «Bajío / Centro-Occidente» en vez de por quién escribe.
              Con el correo primero, el panel y el aviso identifican al prospecto. -->
-        <input type="hidden" name="region">
         <input type="hidden" name="tarifa-cfe">
         <input type="hidden" name="gasto-mensual">
-        <input type="hidden" name="prioridad">
-        <input type="hidden" name="cargos-por-demanda">
         <input type="hidden" name="calificacion">
         <button type="submit" class="btn solid mf-submit" data-cursor data-i18n-html="doc.button3">Enviar<span class="fill"></span></button>
         <p class="mf-legal" data-i18n-html="doc.p4">Al enviar aceptas nuestro <a href="./aviso-privacidad.html" target="_blank" rel="noopener">Aviso de Privacidad</a>.</p>
