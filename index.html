@@ -4654,10 +4654,23 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
           done.innerHTML = html; live.hidden = true; done.hidden = false;
         }
 
-        fetch('/', { method:'POST', body: datos })
+        /* DESTINO DEL ENVÍO — se decide solo, para poder PROBAR antes de migrar.
+           · En Vercel (cualquier *.vercel.app, o el día que sirva el dominio)
+             va a `/api/contacto`: función propia → Supabase + Storage + correo.
+           · En cualquier otro sitio va a `/`, que es como Netlify Forms
+             intercepta el POST.
+           Así la vista previa de Vercel ejercita el camino NUEVO mientras
+           producción sigue con el viejo, sin tocar nada. El día del cambio de
+           DNS esto deja de decidir y se puede simplificar a `/api/contacto`.
+           ⚠️ Mientras tanto NO borrar `data-netlify` ni el campo `form-name`
+           del markup: son lo que hace que Netlify siga recogiendo los envíos. */
+        var DESTINO = (/\.vercel\.app$/.test(location.hostname) ||
+                       window.LOIALT_API === true) ? '/api/contacto' : '/';
+        fetch(DESTINO, { method:'POST', body: datos })
         .then(function(r){ if(!r.ok) throw new Error(r.status); return r; })
         .then(function(){
-          // Camino bueno: los datos YA están en Netlify. El mensaje es el MISMO
+          // Camino bueno: los datos YA están guardados (en Netlify Forms o en
+          // Supabase, según el destino de arriba). El mensaje es el MISMO
           // para todos —no se revela si califica o no— y dice lo que de verdad
           // va a pasar: lo revisa Loialt y contesta con el cálculo.
           ev('formulario-enviado', { origen: modal.dataset.variant || 'ahorro', archivo: !!adjunto });
