@@ -65,6 +65,11 @@ export default async function handler(req, res) {
     const r = await fetch(`${URL_SB}/storage/v1/object/recibos/${ruta}`, {
       method: 'POST',
       headers: {
+        // ⚠️ Las DOS cabeceras. La llamada a la tabla ya las mandaba, pero esta
+        // solo llevaba `Authorization` y Storage devolvía error: con las claves
+        // nuevas (`sb_secret_…`) hace falta también `apikey`. Se detectó porque
+        // el envío SIN adjunto daba 200 y CON adjunto daba 502 (2026-09-24).
+        apikey: KEY_SB,
         Authorization: `Bearer ${KEY_SB}`,
         'Content-Type': archivo.tipo,
         'x-upsert': 'false',
@@ -72,7 +77,7 @@ export default async function handler(req, res) {
       body: archivo.datos,
     });
     if (!r.ok) {
-      console.error('[contacto] subida del recibo falló', r.status, await r.text());
+      console.error('[contacto] subida del recibo falló:', r.status, (await r.text()).slice(0, 300));
       return res.status(502).json({ error: 'No se pudo guardar el recibo' });
     }
     recibo_ruta = ruta;
