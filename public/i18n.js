@@ -304,7 +304,7 @@
     'metrics.p3': 'Automatic backup during grid faults and outages.',
     'metrics.span4': 'Tonnes of CO₂ avoided',
     'metrics.p4': 'Cleaner energy — measurable and ready for your ESG reporting, year after year.',
-    'metrics.p5': 'The partners behind all of this.',
+    'metrics.p5': 'Our partners.',
     'metrics.alt1': 'CATL',
     'metrics.alt2': 'RelyEZ',
 

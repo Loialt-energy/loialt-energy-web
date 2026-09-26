@@ -97,7 +97,7 @@ export const GUIDE = {
 // del hero · z:-1 = DETRÁS del contenido (el glass lo refracta).
 // Losas donde el render 3D vive DETRÁS del contenido: los viajes que las tocan
 // vuelan al fondo en vez de por encima de todo.
-const DETRAS = { peak: true, servicio: true };
+const DETRAS = { peak: true, servicio: true, metrics: true };
 
 // UNIFICACIÓN DEL TAMAÑO (2026-09-03). Las cuatro últimas losas mostraban el
 // rayo a tres tamaños distintos y se leía como si apareciera al azar. La causa:
