@@ -130,8 +130,19 @@ export default async function handler(req, res) {
 // Netlify Forms.
 async function avisar(f) {
   const clave = process.env.RESEND_API_KEY;
-  if (!clave) return;                       // sin clave, no hay aviso y no pasa nada
-  const para = process.env.AVISO_PARA || 'contacto@loialtenergy.com';
+  if (!clave) {
+    console.error('[contacto] falta RESEND_API_KEY: el lead SE GUARDÓ pero nadie recibe aviso');
+    return;
+  }
+  // ⚠️ SIN valor por defecto, a propósito. Antes caía en
+  // `contacto@loialtenergy.com`, que **no tiene MX y rebota**: el aviso se
+  // habría perdido sin que nadie lo notara. Mejor gritar en el log que enviar
+  // a un buzón que no existe.
+  const para = process.env.AVISO_PARA;
+  if (!para) {
+    console.error('[contacto] falta AVISO_PARA: el lead SE GUARDÓ pero no hay a quién avisar');
+    return;
+  }
   const filas = [
     ['Correo', f.email], ['Nombre', [f.nombre, f.apellido].filter(Boolean).join(' ')],
     ['Empresa', f.empresa], ['Giro', f.giro], ['Teléfono', f.telefono], ['Zona', f.region],
