@@ -4702,20 +4702,35 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
           done.innerHTML = html; live.hidden = true; done.hidden = false;
         }
 
-        /* DESTINO DEL ENVÍO — se decide solo, para poder PROBAR antes de migrar.
-           · En Vercel (cualquier *.vercel.app, o el día que sirva el dominio)
-             va a `/api/contacto`: función propia → Supabase + Storage + correo.
-           · En cualquier otro sitio va a `/`, que es como Netlify Forms
-             intercepta el POST.
-           Así la vista previa de Vercel ejercita el camino NUEVO mientras
-           producción sigue con el viejo, sin tocar nada. El día del cambio de
-           DNS esto deja de decidir y se puede simplificar a `/api/contacto`.
-           ⚠️ Mientras tanto NO borrar `data-netlify` ni el campo `form-name`
-           del markup: son lo que hace que Netlify siga recogiendo los envíos. */
-        var DESTINO = (/\.vercel\.app$/.test(location.hostname) ||
-                       window.LOIALT_API === true) ? '/api/contacto' : '/';
-        fetch(DESTINO, { method:'POST', body: datos })
-        .then(function(r){ if(!r.ok) throw new Error(r.status); return r; })
+        /* DESTINO DEL ENVÍO — una CASCADA, no una decisión por hostname.
+           Durante el cambio de DNS el MISMO dominio lo sirven las dos
+           plataformas a la vez, según lo que tenga cacheado cada visitante, así
+           que mirar el hostname no puede acertar. Se intenta en orden y se
+           exige una prueba REAL de que se guardó:
+             1. `/api/contacto`  (Vercel → Supabase)  · vale SOLO si responde
+                                                        JSON con {ok:true}
+             2. `/`              (Netlify Forms)      · vale con 200
+             3. `mailto:`                             · último recurso
+           ⚠️ POR QUÉ SE EXIGE EL JSON, y no basta con el 200: en Vercel un POST
+           a `/` devuelve la página estática con 200, así que el código lo
+           tomaría por éxito y **el lead se perdería EN SILENCIO**. En Netlify el
+           camino contrario da 404, que sí se nota. La cascada cubre las dos
+           direcciones y no depende de dónde esté apuntando el DNS en ese
+           instante.
+           ⚠️ NO borrar `data-netlify` ni el campo `form-name` del markup
+           mientras Netlify siga recogiendo envíos. */
+        function enviarA(url, exigeJson){
+          return fetch(url, { method:'POST', body: datos }).then(function(r){
+            if(!r.ok) throw new Error(r.status);
+            if(!exigeJson) return true;
+            return r.json().then(function(j){
+              if(!j || j.ok !== true) throw new Error('respuesta inesperada');
+              return true;
+            });
+          });
+        }
+        enviarA('/api/contacto', true)
+        .catch(function(){ return enviarA('/', false); })
         .then(function(){
           // Camino bueno: los datos YA están guardados (en Netlify Forms o en
           // Supabase, según el destino de arriba). El mensaje es el MISMO
