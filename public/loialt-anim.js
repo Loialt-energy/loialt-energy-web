@@ -244,6 +244,10 @@ export const STOPS = {
 const STOPS_M = {
   peak:      { x: 50, y: 50, s: 1.35, rx: 0, ry: 0, op: 0.45, dim: 1, halo: 0, breathe: 1, z: -1 },
   productos: { x: 24, y: 20, s: 1.00, rx: 0, ry: 0, op: 0.40, dim: 1, halo: 0, breathe: 1, z: -1 },
+  // Financiamiento entró tarde (2026-09-28): cuando se escribió este mapa la losa
+  // era de DÍA y quedaba excluida por la limitación de apilamiento de abajo. Pasó
+  // a NOCHE el 22-sep y nadie volvió aquí. Valores de arranque, a afinar en #tune.
+  financiamiento: { x: 72, y: 24, s: 1.15, rx: 0, ry: 0, op: 0.32, dim: 1, halo: 0, breathe: 1, z: -1 },
   metrics:   { x: 18, y: 42, s: 1.50, rx: 0, ry: 0, op: 0.20, dim: 1, halo: 0, breathe: 1, z: -1 },
   faq:       { x: 84, y: 34, s: 1.40, rx: 0, ry: 0, op: 0.20, dim: 1, halo: 0, breathe: 1, z: -1 },
 };
