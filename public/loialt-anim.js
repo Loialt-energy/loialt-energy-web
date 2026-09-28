@@ -250,7 +250,7 @@ const STOPS_M = {
   peak:           { x: 50,   y: 50,   s: 2.55, rx: 0, ry: 0, op: 0.72, dim: 1, halo: 0, breathe: 1, z: -1 },
   productos:      { x: 50.5, y: 53,   s: 3.2,  rx: 0, ry: 0, op: 0.4,  dim: 1, halo: 0, breathe: 1, z: -1 },
   financiamiento: { x: 72,   y: 24,   s: 1.15, rx: 0, ry: 0, op: 0,    dim: 1, halo: 0, breathe: 1, z: -1 },
-  metrics:        { x: 50,   y: 83.5, s: 3,    rx: 0, ry: 0, op: 0.4,  dim: 1, halo: 0, breathe: 1, z: -1 },
+  metrics:        { x: 50,   y: 80.5, s: 1.75, rx: 0, ry: 0, op: 0.4,  dim: 1, halo: 0, breathe: 1, z: -1 },
   faq:            { x: 84,   y: 34,   s: 1.4,  rx: 0, ry: 0, op: 0,    dim: 1, halo: 0, breathe: 1, z: -1 },
 };
 
