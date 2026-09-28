@@ -2013,6 +2013,14 @@ em, i, cite, address, dfn, var{ font-style:normal; }
        sigue a su escala natural (background-size:100% auto), solo se le corta
        un pedazo de tierra abajo. El archivo no se toca. */
     aspect-ratio:768/1286; height:auto; overflow:hidden;
+    /* Las cinco perillas del texto, como ENTRADAS. Los escalones de más abajo
+       mueven ESTAS variables y nunca una relación ya calculada — es la regla
+       que ya mordió dos veces en este proyecto (ver la guardia del nav). */
+    --sol-gap:clamp(0.3rem,.8svh,0.5rem);
+    --sol-pad:clamp(0.25rem,.6svh,0.4rem);
+    --sol-h3:clamp(1.05rem,3.4vw,1.3rem);
+    --sol-p:clamp(.8rem,2.3vw,.9rem);
+    --sol-stat:clamp(.72rem,2.1vw,.82rem);
     /* va como --pad-sup, no como padding-top: así el piso del guardia del nav
        (--zona-sup, medido del nav real) no se puede saltar. Ver initGuardiaNav. */
     --pad-sup:clamp(3.75rem,7.5svh,4.25rem);
@@ -2028,14 +2036,42 @@ em, i, cite, address, dfn, var{ font-style:normal; }
     background-size:100% 100%, 100% auto;
   }
   #what .wrap{ position:relative; z-index:1; }
-  /* Sin halo: con la compactación de letra/espaciado del 2026-08-31, las 3
-     fichas completas ya caben dentro del cielo (contenido: 464px, cielo:
-     489px) — el texto nunca toca el contenedor, así que el halo ya no
-     hace falta en ningún lado. */
+  /* VELO DETRÁS DEL TEXTO (2026-09-28). Sustituye a la nota anterior, que daba
+     por bueno un margen de 25px ("contenido 464, cielo 489") medido en UN solo
+     tamaño de pantalla. Al volver a medir, ese margen no existía:
+       · La foto deja de ser cielo liso en y=876 de 1376 = el 68.1% del alto de
+         la losa (medido por la TEXTURA de cada fila, no a ojo: la desviación
+         salta de ~4 a ~57 justo ahí). Debajo están el equipo, los árboles y el
+         pasto.
+       · El texto termina en el 71.2% a 393px de ancho (iPhone 16), 77.1% a 375,
+         80.3% a 360 y se SALE de la losa a 320 (101%). En inglés, 93.3% a 360.
+         O sea: cae en zona sucia en TODO ancho por debajo de ~405px.
+     El texto de esta losa es azul marino (--ink de tono día), así que el velo
+     tiene que ser CLARO: uno oscuro lo volvería ilegible del todo. Se reusa el
+     vocabulario de vidrio que ya tenía la burbuja de escritorio
+     (rgba(255,255,255,.32) + blur), en versión que aparece de arriba abajo:
+     el título sigue respirando sobre el cielo limpio y el vidrio entra justo
+     donde la foto se ensucia.
+     La MÁSCARA es lo que hace entrar también el desenfoque: `backdrop-filter`
+     se aplica parejo a todo el pseudo-elemento, así que sin ella el borde
+     superior del velo se notaría como un corte. Y el tinte va plano a
+     propósito: si el navegador no compone el desenfoque, el velo sigue
+     haciendo su trabajo él solo. */
+  #what .sol-md{ position:relative; }   /* sin z-index: el contexto de apilamiento lo pone .wrap */
+  #what .sol-md::before{
+    content:''; position:absolute; z-index:-1; pointer-events:none;
+    inset:-0.65rem -0.85rem -1.05rem;
+    border-radius:1.25rem;
+    background:rgba(255,255,255,.58);
+    -webkit-backdrop-filter:blur(0.5rem) saturate(1.12);
+    backdrop-filter:blur(0.5rem) saturate(1.12);
+    -webkit-mask-image:linear-gradient(180deg, transparent 0%, #000 30%, #000 100%);
+    mask-image:linear-gradient(180deg, transparent 0%, #000 30%, #000 100%);
+  }
   #what .sol-md > h2{ font-size:clamp(1.85rem,6.2vw,2.4rem); }   /* azul marino: hereda --ink de [data-theme="day"] */
   #what .sol-sub{ display:none; }
   #what .sol-note{ display:none; }   /* nota de depreciación fiscal: se quita (igual que desktop, línea ~644) */
-  #what .sol-md{ margin-top:0; row-gap:clamp(0.3rem,.8svh,0.5rem); }
+  #what .sol-md{ margin-top:0; row-gap:var(--sol-gap); }
   /* a) Neutralizar la interacción — mismo mecanismo que desktop (línea ~577),
      cubre los 5 estados que initSol() puede dejar; initSol() no se toca. */
   #what .sol-list{ display:none; }
@@ -2050,7 +2086,7 @@ em, i, cite, address, dfn, var{ font-style:normal; }
     background:none; -webkit-backdrop-filter:none; backdrop-filter:none;
     border:0; border-radius:0; box-shadow:none;
   }
-  #what .sol-panel{ padding:clamp(0.25rem,.6svh,0.4rem) 0; border-top:1px solid rgba(2,24,56,.18); }
+  #what .sol-panel{ padding:var(--sol-pad) 0; border-top:1px solid rgba(2,24,56,.18); }
   #what #solp-0{ border-top:0; padding-top:0; }
   #what .sol-panel .pk{ display:none; }   /* repetía el numeral, ya no aplica (igual que desktop) */
   #what .sol-panel h3{
@@ -2078,15 +2114,15 @@ em, i, cite, address, dfn, var{ font-style:normal; }
   #what .sol-m-h3{
     display:flex; align-items:baseline; gap:.3em;
     font-family:'Archivo', sans-serif; font-weight:700; color:var(--ink);
-    font-size:clamp(1.05rem,3.4vw,1.3rem); margin:0 0 .18rem; line-height:1.05;
+    font-size:var(--sol-h3); margin:0 0 .18rem; line-height:1.05;
   }
   #what .sol-m-h3::before{ font-family:'Archivo', sans-serif; font-weight:700; }
   #what #solp-0 .sol-m-h3::before{ content:"01"; }
   #what #solp-1 .sol-m-h3::before{ content:"02"; }
   #what #solp-2 .sol-m-h3::before{ content:"03"; }
-  #what .sol-m p{ font-size:clamp(.8rem,2.3vw,.9rem); line-height:1.2; color:var(--ink); font-weight:500; margin:0 0 .12rem; }
+  #what .sol-m p{ font-size:var(--sol-p); line-height:1.2; color:var(--ink); font-weight:500; margin:0 0 .12rem; }
   #what .sol-m-stats{ display:grid; grid-template-columns:1fr 1fr; gap:.15rem .6rem; margin-top:.25rem; }
-  #what .sol-m-stat{ font-size:clamp(.72rem,2.1vw,.82rem); line-height:1.15; color:var(--ink); }
+  #what .sol-m-stat{ font-size:var(--sol-stat); line-height:1.15; color:var(--ink); }
   /* Cifras: verde claro de marca (--energy) + contorno azul marino. El
      contorno va con paint-order:stroke fill para que el trazo se dibuje
      DETRÁS del relleno — así las letras no se "comen" ni adelgazan, solo
@@ -2099,6 +2135,38 @@ em, i, cite, address, dfn, var{ font-style:normal; }
   #what .sol-m-stat i{ font-style:normal; font-weight:500; }
   .foot-cols{ grid-template-columns:1fr 1fr; }
 }
+
+/* ESCALONES DE SOLUCIÓN POR ANCHO (2026-09-28) — los primeros del sitio para
+   MÓVIL; los otros nueve están todos acotados con min-width:901px.
+   Por qué por ANCHO y no por altura: el alto de #what sale de `aspect-ratio`,
+   o sea que SOLO depende del ancho, mientras que el texto no encoge por debajo
+   de ~494px (sus clamp() tocan su piso en rem) y encima gana líneas al
+   angostarse. Las dos magnitudes se cruzan, y el cruce lo gobierna el ancho.
+   Mueven las cinco ENTRADAS, nunca una relación calculada.
+   Se recorta AIRE antes que LETRA, como en Tecnología y en FAQ. `--sol-stat`
+   NO se toca: su piso (.72rem = 11.5px) ya está en el límite de lectura que
+   este proyecto fijó al auditar el móvil. */
+@media (max-width:400px){
+  #what{
+    --sol-gap:clamp(0.2rem,.5svh,0.32rem);
+    --sol-pad:clamp(0.14rem,.32svh,0.24rem);
+  }
+  #what .sol-m p{ line-height:1.16; }
+  #what .sol-m-h3{ margin-bottom:.1rem; }
+  #what .sol-m-stats{ margin-top:.16rem; }
+}
+@media (max-width:345px){
+  #what{
+    --sol-gap:0.16rem;
+    --sol-pad:0.1rem;
+    --sol-h3:1rem;
+    --sol-p:.78rem;
+  }
+  #what .sol-md > h2{ font-size:1.5rem; }   /* el titular es lo que más aire da a este ancho */
+  #what .sol-m p{ line-height:1.12; }
+  #what .sol-m-stat{ line-height:1.08; }
+}
+
 @media (max-width:560px){
   .foot-cols{ grid-template-columns:1fr; }
 }
@@ -4318,7 +4386,40 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
       } else if(marcar){
         console.log('[guardia-nav] limpio: ningún texto queda bajo la barra.');
       }
+      revisarSolucion(marcar);
       return malos;
+    }
+
+    /* COMPROBACIÓN PROPIA DE SOLUCIÓN (2026-09-28). `#what` es la única losa
+       cuyo alto NO lo manda su contenido: en móvil va atado a la proporción de
+       su foto de fondo. Su texto tiene que caber en la franja de CIELO; por
+       debajo del 68.1% del alto la foto se llena de textura (equipo, árboles,
+       pasto) y el texto azul marino deja de leerse. Medido por la desviación
+       de luminancia fila a fila del archivo, no a ojo.
+       El velo de vidrio lo cubre, pero si el texto se pasa MUCHO también se
+       recorta contra el borde, así que conviene vigilarlo. Silencioso si va
+       bien; es informativo, no una regla dura como la del nav. */
+    function revisarSolucion(marcar){
+      if(!window.matchMedia('(max-width:900px)').matches) return;
+      var sec = document.getElementById('what'); if(!sec) return;
+      var stats = sec.querySelectorAll('.sol-m-stat');
+      var ult = stats[stats.length - 1]; if(!ult) return;
+      var y = window.scrollY;
+      window.scrollTo(0, sec.offsetTop);
+      var sr = sec.getBoundingClientRect(), ur = ult.getBoundingClientRect();
+      var pct = ((ur.bottom - sr.top) / sr.height) * 100;
+      window.scrollTo(0, y);
+      if(pct > 100){
+        console.warn('[guardia-sol] el texto de Solución SE SALE de la losa (' +
+          pct.toFixed(1) + '%) y queda recortado. Compacta --sol-gap/--sol-pad.');
+        if(marcar) ult.style.outline = '2px solid #e5484d';
+      } else if(pct > 68.1){
+        console.info('[guardia-sol] el texto de Solución baja al ' + pct.toFixed(1) +
+          '% (la foto se ensucia en el 68.1%). Lo cubre el velo de .sol-md.');
+      } else if(marcar){
+        console.log('[guardia-sol] Solución limpia: el texto termina en el ' +
+          pct.toFixed(1) + '%, dentro del cielo.');
+      }
     }
     window.LOIALT_GUARDIA = function(){ return verificar(true); };
     if(location.hash === '#guardia') setTimeout(function(){ verificar(true); }, 2500);
