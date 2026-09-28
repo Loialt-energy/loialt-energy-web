@@ -151,7 +151,7 @@ async function avisar(f) {
     ['Recibo', f.recibo_nombre ? `adjuntó «${f.recibo_nombre}» (está en Supabase › Storage › recibos)` : 'no adjuntó'],
   ].filter(([, v]) => v);
 
-  await fetch('https://api.resend.com/emails', {
+  const r = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${clave}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -164,6 +164,18 @@ async function avisar(f) {
       }</table>`,
     }),
   });
+  // ⚠️ HAY QUE MIRAR LA RESPUESTA. `fetch` solo lanza si falla la RED: un 401
+  // por clave mala o un 422 por remitente no verificado devuelven normalmente y
+  // el `catch` de quien llama no se entera. Sin esto, «no hay errores en el log»
+  // no significa que el correo salió — que es justo lo que no se puede saber
+  // desde fuera, porque el aviso no puede tumbar el envío.
+  if (!r.ok) {
+    const detalle = (await r.text().catch(() => '')).slice(0, 300);
+    console.error('[contacto] Resend rechazó el aviso:', r.status, detalle);
+    return;
+  }
+  const id = await r.json().then(j => j && j.id).catch(() => null);
+  console.log('[contacto] aviso enviado a', para, '· id de Resend:', id);
 }
 
 const escapar = (s) => s.replace(/[&<>"']/g, (c) =>
