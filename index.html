@@ -376,6 +376,13 @@ html.tone-night .quicknav a.active{ color:var(--energy-deep); }
   transition:background .5s cubic-bezier(.22,1,.36,1), border-color .5s ease,
              border-radius .5s cubic-bezier(.22,1,.36,1), backdrop-filter .5s ease;
 }
+/* ⚠️ El atributo `hidden` NO basta aquí: la regla de arriba declara `display`,
+   y cualquier `display` de autor pisa el `display:none` que el navegador da a
+   `[hidden]`. Estas dos reglas ganan por especificidad (id + atributo) sin
+   necesidad de `!important`. Las usa initSocialFab() para esconder la píldora
+   mientras los enlaces no tengan destino. */
+#socialFab[hidden]{ display:none; }
+.social-fab-list li[hidden]{ display:none; }
 .social-fab.is-open{
   border-radius:1.5rem;
   background:rgba(251,251,251,.72);                                  /* = .quicknav (día) */
@@ -5247,6 +5254,28 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
     if(!fab) return;
     var btn = fab.querySelector('.social-fab-toggle');
     var links = [].slice.call(fab.querySelectorAll('.social-fab-list a'));
+
+    /* LA PÍLDORA SE ESCONDE SOLA MIENTRAS NO HAYA CUENTAS (2026-09-28).
+       Loialt todavía no tiene Instagram, Facebook ni LinkedIn, así que los tres
+       enlaces apuntan a `href="#"`. Dejar el botón así es PEOR que no tenerlo:
+       quien pulse «Instagram» salta al inicio de la página y lo lee como un
+       fallo del sitio.
+       Se esconde por el MISMO criterio que el ID de Umami: el hueco vacío
+       desactiva la pieza. Así, el día que se peguen las URLs reales el botón
+       vuelve SOLO — no hay que acordarse de deshacer nada, que es justo donde
+       estas cosas se quedan olvidadas.
+       Qué cuenta como «sin destino»: vacío, `#` o `javascript:`. Basta con que
+       UNA red tenga URL real para que la píldora aparezca; las que sigan sin
+       destino se ocultan una a una. */
+    function sinDestino(a){
+      var h = (a.getAttribute('href') || '').trim();
+      return !h || h === '#' || h.slice(0, 11).toLowerCase() === 'javascript:';
+    }
+    var vivos = links.filter(function(a){ return !sinDestino(a); });
+    links.forEach(function(a){
+      if (sinDestino(a)) a.closest('li').hidden = true;
+    });
+    if (!vivos.length){ fab.hidden = true; return; }   // ninguna cuenta todavía
     function setOpen(on){
       fab.classList.toggle('is-open', on);
       btn.setAttribute('aria-expanded', on ? 'true' : 'false');
