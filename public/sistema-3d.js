@@ -576,10 +576,63 @@ import * as THREE from 'https://esm.sh/three@0.160.0';
     // herramientas/medir-dominancia.html (reporta `barrido` y `optimo`).
     const view = { theta: Math.PI / 4, phi: Math.PI / 2 - 0.56, zoom: 1, target: new THREE.Vector3(-0.5, 2.3, 0) };
     const home = JSON.parse(JSON.stringify({ theta: view.theta, phi: view.phi, zoom: 1 }));
-    const FRUSTUM = 13.9;
+    /* ENCUADRE AUTOMÁTICO (2026-09-28). Antes `FRUSTUM` era una constante:
+       el campo VERTICAL quedaba fijo en 13.9 y solo el horizontal seguía al
+       contenedor. Consecuencia: en una caja baja —que es lo que le toca a este
+       render en móvil— la escena encogía con ella y se veía ridícula, mientras
+       sobraba ancho sin usar.
+       Ahora el frustum se DERIVA de la escena y del aspecto real de la caja, así
+       que el render llena su hueco en cualquier pantalla sin tocar nada a mano.
+       Cómo se mide, y por qué así: se proyecta la caja envolvente de `world`
+       sobre la base de la cámara BARRIENDO el azimut completo —el giro recorre
+       360° (36+252+72)— y la banda de elevaciones que usan las tres vistas. Es
+       la misma lección que ya costó una pasada al calibrar a mano: validar solo
+       en las tres paradas deja fuera los ángulos intermedios, que es justo donde
+       el contenido rozaba el borde.
+       ⚠️ Si se cambian las vistas de `index.html` (hoy el 62.56 / 84.98 / 63.85)
+       fuera de esta banda, ampliarla aquí. */
+    const BANDA_EL = [58, 88];          // grados, cubre las tres vistas con margen
+    /* ⚠️ Es un factor de RECORTE, no de aire. Medido: ajustar la caja envolvente
+       ENTERA al aspecto de escritorio pediría un frustum de 16.15, y el encuadre
+       aprobado usa 13.9 — o sea que recorta la caja un 14%. Tiene sentido: la
+       caja incluye las puntas de la planta solar y de las torres, que pueden
+       salirse sin que se note. `K` reproduce exactamente ese encuadre a aspecto
+       de escritorio y lo traslada a cualquier otro.
+       Si se cambia la escena de sitio, revalidar con herramientas/medir-dominancia.html. */
+    const K = 13.9 / 16.15;
+    let extW = 1, extH = 1;
+    function medirExtension(){
+      const caja = new THREE.Box3().setFromObject(world);
+      if (caja.isEmpty()) return;
+      const esq = [];
+      for (const x of [caja.min.x, caja.max.x])
+        for (const y of [caja.min.y, caja.max.y])
+          for (const z of [caja.min.z, caja.max.z]) esq.push(new THREE.Vector3(x, y, z));
+      const G = Math.PI / 180;
+      const dir = new THREE.Vector3(), der = new THREE.Vector3(), arr = new THREE.Vector3();
+      const UP = new THREE.Vector3(0, 1, 0), v = new THREE.Vector3();
+      let mw = 0, mh = 0;
+      for (let az = 0; az < 360; az += 5){
+        for (let el = BANDA_EL[0]; el <= BANDA_EL[1]; el += 2){
+          const th = az * G, ph = el * G;
+          dir.set(Math.sin(ph) * Math.sin(th), Math.cos(ph), Math.sin(ph) * Math.cos(th)).normalize();
+          der.crossVectors(dir, UP).normalize();
+          arr.crossVectors(der, dir).normalize();
+          for (const c of esq){
+            v.copy(c).sub(view.target);
+            mw = Math.max(mw, Math.abs(v.dot(der)));
+            mh = Math.max(mh, Math.abs(v.dot(arr)));
+          }
+        }
+      }
+      extW = mw; extH = mh;
+    }
     function resize() {
       const a = W() / H();
-      camera.left = -FRUSTUM * a; camera.right = FRUSTUM * a; camera.top = FRUSTUM; camera.bottom = -FRUSTUM;
+      // El eje que MANDA es el que se queda corto: así la escena llena la caja
+      // sea alta y angosta o baja y ancha.
+      const f = Math.max(extH, extW / a) * K;
+      camera.left = -f * a; camera.right = f * a; camera.top = f; camera.bottom = -f;
       camera.updateProjectionMatrix(); renderer.setSize(W(), H());
     }
     function updateCamera() {
@@ -590,6 +643,7 @@ import * as THREE from 'https://esm.sh/three@0.160.0';
         view.target.z + r * Math.sin(view.phi) * Math.cos(view.theta));
       camera.lookAt(view.target); camera.zoom = view.zoom; camera.updateProjectionMatrix();
     }
+    medirExtension();   // la escena ya está montada en `world`
     resize(); updateCamera();
     window.addEventListener('resize', resize);
 

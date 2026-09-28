@@ -242,14 +242,16 @@ export const STOPS = {
    fondo y queda INVISIBLE. Si algún día se quieren, hace falta
    `@media(max-width:900px){ section[data-theme="day"]{ isolation:isolate } }`. */
 const STOPS_M = {
-  peak:      { x: 50, y: 50, s: 1.35, rx: 0, ry: 0, op: 0.45, dim: 1, halo: 0, breathe: 1, z: -1 },
-  productos: { x: 24, y: 20, s: 1.00, rx: 0, ry: 0, op: 0.40, dim: 1, halo: 0, breathe: 1, z: -1 },
-  // Financiamiento entró tarde (2026-09-28): cuando se escribió este mapa la losa
-  // era de DÍA y quedaba excluida por la limitación de apilamiento de abajo. Pasó
-  // a NOCHE el 22-sep y nadie volvió aquí. Valores de arranque, a afinar en #tune.
-  financiamiento: { x: 72, y: 24, s: 1.15, rx: 0, ry: 0, op: 0.32, dim: 1, halo: 0, breathe: 1, z: -1 },
-  metrics:   { x: 18, y: 42, s: 1.50, rx: 0, ry: 0, op: 0.20, dim: 1, halo: 0, breathe: 1, z: -1 },
-  faq:       { x: 84, y: 34, s: 1.40, rx: 0, ry: 0, op: 0.20, dim: 1, halo: 0, breathe: 1, z: -1 },
+  // Afinadas por el usuario en #tune desde el teléfono (2026-09-28). Solo móvil:
+  // las de escritorio (STOPS) se quedan como estaban, por decisión suya.
+  // OJO con `op: 0` en financiamiento y faq: las apagó a propósito. El rayo se
+  // sigue montando ahí, invisible. Si alguna vez molesta el coste, se quitan del
+  // mapa — pero entonces `MZONE_ON` vuelve a mirar `metrics`, que sí sigue.
+  peak:           { x: 50,   y: 50,   s: 2.55, rx: 0, ry: 0, op: 0.72, dim: 1, halo: 0, breathe: 1, z: -1 },
+  productos:      { x: 50.5, y: 53,   s: 3.2,  rx: 0, ry: 0, op: 0.4,  dim: 1, halo: 0, breathe: 1, z: -1 },
+  financiamiento: { x: 72,   y: 24,   s: 1.15, rx: 0, ry: 0, op: 0,    dim: 1, halo: 0, breathe: 1, z: -1 },
+  metrics:        { x: 50,   y: 83.5, s: 3,    rx: 0, ry: 0, op: 0.4,  dim: 1, halo: 0, breathe: 1, z: -1 },
+  faq:            { x: 84,   y: 34,   s: 1.4,  rx: 0, ry: 0, op: 0,    dim: 1, halo: 0, breathe: 1, z: -1 },
 };
 
 // Overrides guardados desde el panel #tune (botón 💾 por sección).
@@ -1054,8 +1056,17 @@ export function initLoialtAnim(registry){
       ? (batVisFrac() < 0.35)
       : (probTop > innerHeight * 0.9 || bajando);
     if (fuera){
-      guide.armed = true;
-      if (guide.batOn){ guide.batOn = false; if (window.LOIALT_BATTERY_OFF) window.LOIALT_BATTERY_OFF(); }
+      /* ⚠️ EN MÓVIL LA BATERÍA NO SE REINICIA (2026-09-28, pedido del usuario):
+         la animación se ve UNA vez por carga de página; para volver a verla hay
+         que recargar. Esto REVIERTE en móvil el reinicio que se montó el
+         2026-09-22, que sigue vigente en escritorio.
+         No hace falta nada más: al regresar a Críticos, `guide.batOn` sigue en
+         `true` y la rama de abajo se limita a `mountInDock()` sobre la batería
+         ya cargada. Si se re-armara, volvería a dispararse la entrada. */
+      if (!movil){
+        guide.armed = true;
+        if (guide.batOn){ guide.batOn = false; if (window.LOIALT_BATTERY_OFF) window.LOIALT_BATTERY_OFF(); }
+      }
       /* ¿Hay quien recoja el rayo, o hay que esconderlo?
          Bajando EN ESCRITORIO sí: la rama del dock se lo entrega a la parada de
          la losa siguiente (`mountInStop`), y esconderlo aquí le quitaría ese

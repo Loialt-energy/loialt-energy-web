@@ -1033,7 +1033,20 @@ html .quicknav, html .quicknav a, html header.nav{ transition: color .6s ease, b
     -webkit-backdrop-filter:blur(14px) saturate(1.2); backdrop-filter:blur(14px) saturate(1.2);
     box-shadow:inset 2px 2px 1px 0 rgba(255,255,255,.30), inset -1px -1px 1px 1px rgba(255,255,255,.14); }
   .svc-detail{ grid-template-columns:1fr; gap:clamp(0.875rem,2svh,1.25rem); }
-  .svc-media{ min-height:clamp(8.75rem,20svh,11.25rem); }   /* imagen DEBAJO del texto (orden natural del markup) */
+  /* El render va DEBAJO del texto (orden natural del markup). Su alto subió el
+     2026-09-28: con 8.75-11.25rem (140-180px) la escena se veía ridícula.
+     ⚠️ Pero el alto de la caja NO cambia el tamaño del render: el encuadre lo
+     limita el ANCHO (la escena es ancha y plana), y lo sigue limitando hasta
+     que la caja se estrecha por debajo de ~130px de alto. O sea que de más alto
+     solo se gana HUECO VACÍO — se probó con 34svh y quedaba un vacío enorme
+     entre el texto y el render. Lo que agrandó el render fue el encuadre
+     automático de sistema-3d.js, no esto.
+     El valor actual apunta a la proporción ÓPTIMA de la caja, que es **1.355**
+     (ancho/alto): medida la escena, su semi-extensión es 19.5 de ancho por 14.39
+     de alto, así que a esa proporción las dos se ajustan A LA VEZ. Más alta y
+     manda el ancho (sobra aire arriba y abajo); más baja y manda el alto (sobra
+     a los lados). En ambos casos el render sale más chico que en el óptimo. */
+  .svc-media{ min-height:clamp(12rem,27.5svh,16rem); }
   #servicio .svc-num{ display:none; }
   #servicio .svc-panel .pk{ display:none; }
   #servicio .svc-mtitle{ display:block; margin:0; font-family:var(--font-display); font-weight:700;
@@ -1167,7 +1180,9 @@ html .quicknav, html .quicknav a, html header.nav{ transition: color .6s ease, b
   border-radius:0 0 calc(1rem - 1px) calc(1rem - 1px); }
 .tf-k{ font-family:var(--font-mono); font-size:.62rem; color:#4d8338; letter-spacing:.12em; }   /* 2026-09-03 · era var(--energy-deep) #5a9a42, que sobre el blanco de la tarjeta daba 3.42 de contraste (mínimo AA: 4.5). #4d8338 da 4.55. Se fija aquí y NO en el token: --energy-deep tiene 23 usos y en el resto no hay problema de contraste. */
 .tf-txt{ margin-top:0.3125rem; font-size:.85rem; line-height:1.4; color:var(--ink-dim); }
-.tf-dots{ display:none; }   /* puntos del carrusel: SOLO móvil (el bloque móvil los muestra) */
+.tf-dots{ display:none; }   /* RETIRADOS del markup el 2026-09-28: eran solo indicadores,
+                              no se podían pulsar, y el usuario los encontró sin sentido.
+                              La regla y initTechCarousel() quedan inertes (salen por !dots.length). */
 [data-theme="night"] .tf-step{ background:rgba(20,28,42,.96); border-color:rgba(255,255,255,.1); }
 [data-theme="night"] .tf-step-foot{ background:rgba(255,255,255,.035); border-top-color:rgba(255,255,255,.08); }
 .tech-copy .pk{ font-family:var(--font-mono); font-size:.68rem; color:var(--energy-deep); letter-spacing:.12em; }
@@ -3144,7 +3159,6 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
           </div>
         </div>
       </div>
-      <div class="tf-dots" aria-hidden="true"><span class="active"></span><span></span><span></span></div>
     </div>
   </div>
 </section>
@@ -5428,7 +5442,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
         es.forEach(function(e){
           if(e.isIntersecting && !sistema && !montando){
             montando=true;
-            import('./public/sistema-3d.js?v=12').then(function(m){
+            import('./public/sistema-3d.js?v=13').then(function(m){
               if(!host.isConnected){ montando=false; return; }
               sistema=m.initSistema3D(host,{ background:null, showGround:false, interactivo:false });
               // arranca en la vista que corresponda (la 1 al llegar; si ya se
@@ -5510,7 +5524,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
 <script type="module">
   import { initLogo3D } from './public/loialt-logo-3d.js?v=8';
   import { initLettermark3D } from './public/loialt-lettermark-3d.js?v=6';
-  import { initLoialtAnim } from './public/loialt-anim.js?v=145';
+  import { initLoialtAnim } from './public/loialt-anim.js?v=146';
 
   const registry = {};
   const logoEl = document.getElementById('heroLogo3D');
