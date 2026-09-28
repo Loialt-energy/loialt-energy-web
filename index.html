@@ -2044,45 +2044,33 @@ em, i, cite, address, dfn, var{ font-style:normal; }
        degradado/fade como los que se descartaron antes; solo baja parejo el
        brillo de toda la foto para que el texto y el verde resalten más). */
     background-image:
+      linear-gradient(180deg,
+        rgba(251,251,251,0)    20%,
+        rgba(251,251,251,.10)  40%,
+        rgba(251,251,251,.26)  60%,
+        rgba(251,251,251,.38)  80%,
+        rgba(251,251,251,.44) 100%),
       linear-gradient(rgba(2,24,56,.2), rgba(2,24,56,.2)),
       url('./public/solucion-bess.webp');
-    background-repeat:no-repeat, no-repeat;
-    background-position:top center, top center;
-    background-size:100% 100%, 100% auto;
+    background-repeat:no-repeat, no-repeat, no-repeat;
+    background-position:top center, top center, top center;
+    background-size:100% 100%, 100% 100%, 100% auto;
   }
   #what .wrap{ position:relative; z-index:1; }
-  /* VELO DETRÁS DEL TEXTO (2026-09-28). Sustituye a la nota anterior, que daba
-     por bueno un margen de 25px ("contenido 464, cielo 489") medido en UN solo
-     tamaño de pantalla. Al volver a medir, ese margen no existía:
-       · La foto deja de ser cielo liso en y=876 de 1376 = el 68.1% del alto de
-         la losa (medido por la TEXTURA de cada fila, no a ojo: la desviación
-         salta de ~4 a ~57 justo ahí). Debajo están el equipo, los árboles y el
-         pasto.
-       · El texto termina en el 71.2% a 393px de ancho (iPhone 16), 77.1% a 375,
-         80.3% a 360 y se SALE de la losa a 320 (101%). En inglés, 93.3% a 360.
-         O sea: cae en zona sucia en TODO ancho por debajo de ~405px.
-     El texto de esta losa es azul marino (--ink de tono día), así que el velo
-     tiene que ser CLARO: uno oscuro lo volvería ilegible del todo. Se reusa el
-     vocabulario de vidrio que ya tenía la burbuja de escritorio
-     (rgba(255,255,255,.32) + blur), en versión que aparece de arriba abajo:
-     el título sigue respirando sobre el cielo limpio y el vidrio entra justo
-     donde la foto se ensucia.
-     La MÁSCARA es lo que hace entrar también el desenfoque: `backdrop-filter`
-     se aplica parejo a todo el pseudo-elemento, así que sin ella el borde
-     superior del velo se notaría como un corte. Y el tinte va plano a
-     propósito: si el navegador no compone el desenfoque, el velo sigue
-     haciendo su trabajo él solo. */
-  #what .sol-md{ position:relative; }   /* sin z-index: el contexto de apilamiento lo pone .wrap */
-  #what .sol-md::before{
-    content:''; position:absolute; z-index:-1; pointer-events:none;
-    inset:-0.65rem -0.85rem -1.05rem;
-    border-radius:1.25rem;
-    background:rgba(255,255,255,.58);
-    -webkit-backdrop-filter:blur(0.5rem) saturate(1.12);
-    backdrop-filter:blur(0.5rem) saturate(1.12);
-    -webkit-mask-image:linear-gradient(180deg, transparent 0%, #000 30%, #000 100%);
-    mask-image:linear-gradient(180deg, transparent 0%, #000 30%, #000 100%);
-  }
+  /* VELO (2026-09-28). Primera versión: una caja de vidrio detrás del bloque de
+     texto. El usuario la descartó — «se ve raro el aspecto burbuja de texto,
+     prefiero que solo sea un fade en toda la pantalla y más sutil». Así que el
+     velo dejó de ser una caja y pasó a ser una CAPA MÁS del fondo de la losa,
+     de borde a borde, sin recuadro ni desenfoque.
+     Por qué hace falta, medido: la foto deja de ser cielo liso en y=876 de 1376
+     = el 68.1% del alto de la losa (la desviación de luminancia por fila salta
+     de ~4 a ~57 justo ahí). Debajo están el equipo, los árboles y el pasto, y el
+     texto de esta losa es azul marino, así que sin velo se pierde.
+     El velo es CLARO por eso mismo: uno oscuro —el reflejo natural, copiando el
+     de las losas de noche— dejaría texto oscuro sobre fondo oscuro.
+     La rampa es larga a propósito (arranca en el 20% y no llega a su máximo
+     hasta el borde) y se queda en .44: el usuario pidió que no acabe tan blanco
+     y que no se note el cambio. */
   #what .sol-md > h2{ font-size:clamp(1.85rem,6.2vw,2.4rem); }   /* azul marino: hereda --ink de [data-theme="day"] */
   #what .sol-sub{ display:none; }
   #what .sol-note{ display:none; }   /* nota de depreciación fiscal: se quita (igual que desktop, línea ~644) */
