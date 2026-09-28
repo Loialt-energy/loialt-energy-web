@@ -1876,7 +1876,22 @@ em, i, cite, address, dfn, var{ font-style:normal; }
   #faq{ min-height:0; }
   /* frontera noche/día SIN lag: en móvil el lienzo día está apagado (flow-bg) y
      cada losa de día pinta su fondo hueso — la línea viaja nativa con el scroll */
-  section[data-theme="day"]{ background:linear-gradient(180deg,var(--bg-2) 0%,var(--bg) 22%,var(--bg) 78%,var(--bg-2) 100%); }
+  /* TEXTURA DE DÍA EN MÓVIL (2026-09-28). Antes era un degradado plano y se veía
+     blanco y vacío comparado con escritorio, donde el fondo lo pinta el lienzo
+     animado `#flowbgDay`.
+     ⚠️ NO se enciende ese lienzo en móvil, y las dos razones siguen en pie
+     (están en flow-bg.js): el recorte por frame llega tarde con el scroll táctil
+     —la frontera tiembla— y con las losas compactas puede haber una losa de día
+     ENTERA en pantalla, con noche arriba Y abajo, que un solo `inset` no sabe
+     representar. En vez de eso se sirve **una captura estática** de ese mismo
+     shader en paleta de día: misma textura, cero GPU y cero recorte por cuadro.
+     Es el mismo recurso que ya se usó para el render del rayo en Métricas móvil.
+     Si se cambia la paleta de `flow-bg.js`, hay que volver a capturarla. */
+  section[data-theme="day"]{
+    background-color:var(--bg);
+    background-image:url('./public/textura-dia.webp');
+    background-size:cover; background-position:center; background-repeat:no-repeat;
+  }
   /* estas secciones traen padding con ID desde desktop → re-amarrarlas al ritmo */
   #peak{ padding:clamp(2.75rem,6svh,3.75rem) var(--pad); }
   #tecnologia{ --pad-sup:clamp(2.75rem,6svh,3.75rem); --pad-inf:clamp(2.75rem,6svh,3.75rem); }
@@ -2126,14 +2141,18 @@ em, i, cite, address, dfn, var{ font-style:normal; }
   #what .sol-m p{ font-size:var(--sol-p); line-height:1.2; color:var(--ink); font-weight:500; margin:0 0 .12rem; }
   #what .sol-m-stats{ display:grid; grid-template-columns:1fr 1fr; gap:.15rem .6rem; margin-top:.25rem; }
   #what .sol-m-stat{ font-size:var(--sol-stat); line-height:1.15; color:var(--ink); }
-  /* Cifras: verde claro de marca (--energy) + contorno azul marino. El
-     contorno va con paint-order:stroke fill para que el trazo se dibuje
-     DETRÁS del relleno — así las letras no se "comen" ni adelgazan, solo
-     ganan un borde que las despega del cielo. */
+  /* Cifras en VERDE OSCURO (2026-09-28), y el contorno ya no hace falta.
+     ⚠️ El verde claro de marca es IMPOSIBLE aquí, y no por poco: medido contra
+     el fondo compuesto de esta losa (foto + velo), `--energy` da **1.02:1** y
+     `--energy-deep` 1.51:1, cuando el mínimo es 4.5. Y no se arregla con el
+     velo: un verde claro necesita fondo OSCURO para leerse, pero el texto de
+     esta losa es azul marino y necesita fondo CLARO. Sobre un mismo fondo son
+     incompatibles, así que la cifra tiene que oscurecerse.
+     Con este verde da **5.36:1** y conserva el matiz verde que distingue la
+     cifra de su etiqueta. El `-webkit-text-stroke` era el parche que sostenía
+     al verde claro; con un verde que se lee solo, sobra. */
   #what .sol-m-stat b{
-    color:var(--energy); font-weight:700;
-    -webkit-text-stroke:.055em #021838;
-    paint-order:stroke fill;
+    color:#1b3d12; font-weight:700;
   }
   #what .sol-m-stat i{ font-style:normal; font-weight:500; }
   .foot-cols{ grid-template-columns:1fr 1fr; }
