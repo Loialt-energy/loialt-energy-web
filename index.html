@@ -1344,7 +1344,19 @@ html .quicknav, html .quicknav a, html header.nav{ transition: color .6s ease, b
 /* =========================================================
    ★ PEAK SHAVING — escena firma (pinned scrub)
    ========================================================= */
-#peak{ padding:0; }
+/* ⚠️ NADA DE ATAJO `padding` AQUÍ (convertido el 2026-09-28). El atajo pisa las
+   DOS entradas del piso (--pad-sup / --pad-inf) y dejaba a esta losa fuera de la
+   guardia del nav, que es la regla dura del sitio. Medido antes de tocarlo: no
+   había nada bajo la barra, pero la holgura caía a **31 px a 1280×727** — una
+   línea más de titular y se metía.
+   El `padding:0` hacía DOS trabajos: quitar el piso vertical Y quitar el
+   horizontal, que es lo que deja la gráfica a sangre. Solo se conserva el
+   segundo; el vertical vuelve a pasar por el piso del nav. */
+#peak{ --pad-sup:0px; --pad-inf:0px; padding-left:0; padding-right:0; }
+/* ⚠️ `0px`, con unidad, NO `0`. Un cero SIN unidad dentro de `max()` invalida la
+   declaración entera y el navegador la descarta: el piso deja de aplicarse en
+   silencio y la losa vuelve a quedar sin protección. Medido: con `0` el
+   padding-top calculado salía 0 en vez de los 77 px del nav. */
 /* alto de la escena peak: baja este % para recortar el sobrante vacío bajo la gráfica (sube el número para más aire) */
 .peak-pin{ width:100%; position:relative; display:flex; flex-direction:column; justify-content:center; overflow:hidden; }
 /* ── VIDRIO MÁXIMO EN LA GRÁFICA (2026-09-03) ────────────────────────────────
@@ -1900,7 +1912,9 @@ em, i, cite, address, dfn, var{ font-style:normal; }
     background-size:cover; background-position:center; background-repeat:no-repeat;
   }
   /* estas secciones traen padding con ID desde desktop → re-amarrarlas al ritmo */
-  #peak{ padding:clamp(2.75rem,6svh,3.75rem) var(--pad); }
+  /* Mismo motivo que arriba: entradas, no atajo. El horizontal lo pone ya la
+     regla base de .section con var(--pad), así que no hace falta repetirlo. */
+  #peak{ --pad-sup:clamp(2.75rem,6svh,3.75rem); --pad-inf:clamp(2.75rem,6svh,3.75rem); }
   #tecnologia{ --pad-sup:clamp(2.75rem,6svh,3.75rem); --pad-inf:clamp(2.75rem,6svh,3.75rem); }
   /* FINANCIAMIENTO en móvil: el scroll es libre, así que las tres tarjetas se
      APILAN en una columna. Sin esto seguían en 3 columnas de ~110px. */
