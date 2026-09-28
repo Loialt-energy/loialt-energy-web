@@ -244,14 +244,14 @@ export const STOPS = {
 const STOPS_M = {
   // Afinadas por el usuario en #tune desde el teléfono (2026-09-28). Solo móvil:
   // las de escritorio (STOPS) se quedan como estaban, por decisión suya.
-  // OJO con `op: 0` en financiamiento y faq: las apagó a propósito. El rayo se
-  // sigue montando ahí, invisible. Si alguna vez molesta el coste, se quitan del
-  // mapa — pero entonces `MZONE_ON` vuelve a mirar `metrics`, que sí sigue.
-  peak:           { x: 50,   y: 50,   s: 2.55, rx: 0, ry: 0, op: 0.72, dim: 1, halo: 0, breathe: 1, z: -1 },
-  productos:      { x: 48,   y: 61,   s: 3,    rx: 0, ry: 0, op: 0.4,  dim: 1, halo: 0, breathe: 1, z: -1 },
-  financiamiento: { x: 72,   y: 24,   s: 1.15, rx: 0, ry: 0, op: 0,    dim: 1, halo: 0, breathe: 1, z: -1 },
-  metrics:        { x: 50,   y: 80.5, s: 1.75, rx: 0, ry: 0, op: 0.4,  dim: 1, halo: 0, breathe: 1, z: -1 },
-  faq:            { x: 84,   y: 34,   s: 1.4,  rx: 0, ry: 0, op: 0,    dim: 1, halo: 0, breathe: 1, z: -1 },
+  // Financiamiento y FAQ estuvieron aquí con `op: 0` y se RETIRARON el 28-sep:
+  // apagadas no aportaban nada y seguían montando un lienzo 3D invisible en el
+  // teléfono. Si se quieren de vuelta, se añaden con su opacidad y ya.
+  // OJO al tocar este mapa: `MZONE_ON` (más abajo) mira `metrics` y `faq`; con
+  // `metrics` presente la foto estática sigue apagada, que es lo correcto.
+  peak:      { x: 50,   y: 50,   s: 2.55, rx: 0, ry: 0, op: 0.72, dim: 1, halo: 0, breathe: 1, z: -1 },
+  productos: { x: 48,   y: 61,   s: 3,    rx: 0, ry: 0, op: 0.4,  dim: 1, halo: 0, breathe: 1, z: -1 },
+  metrics:   { x: 50,   y: 80.5, s: 1.75, rx: 0, ry: 0, op: 0.4,  dim: 1, halo: 0, breathe: 1, z: -1 },
 };
 
 // Overrides guardados desde el panel #tune (botón 💾 por sección).
