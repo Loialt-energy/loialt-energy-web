@@ -609,7 +609,15 @@ export function initLoialtAnim(registry){
   function gCanvas(){ return gEl ? gEl.querySelector('canvas') : null; }
 
   function heroFrameW(){
-    if (!guide.frameEl) guide.frameEl = document.querySelector('#hero .frame');
+    // ⚠️ Mide `.frame-ref`, NO `.frame`. Ver el comentario de esa clase en
+    // index.html: `.frame` es el rayo decorativo del hero y su tamaño se ajusta
+    // por razones de maquetación (que no quede bajo la barra inferior), mientras
+    // que esta anchura multiplica la `s` de TODAS las paradas del guía. Tenerlas
+    // atadas hizo que un arreglo del hero encogiera el guía un 13% en las tres
+    // paradas de móvil afinadas a mano, en silencio. `.frame` queda de respaldo
+    // por si el elemento de referencia no existiera.
+    if (!guide.frameEl) guide.frameEl = document.querySelector('#hero .frame-ref')
+                                     || document.querySelector('#hero .frame');
     return guide.frameEl ? guide.frameEl.getBoundingClientRect().width : 280;
   }
 

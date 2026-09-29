@@ -557,6 +557,18 @@ html .quicknav, html .quicknav a, html header.nav{ transition: color .6s ease, b
 .hero-right{ position:relative; z-index:2; display:flex; align-items:center; justify-content:center; min-height:48vh; order:1; }
 /* Contenedor del logo 3D en el hero: transparente (el logo va sobre el hero blanco) */
 .frame{ position:relative; width:min(31.25rem,100%); aspect-ratio:4/5; animation:framefloat 6s ease-in-out infinite; }
+/* ⚠️ REFERENCIA DE TAMAÑO DEL RAYO GUÍA (2026-09-29). `heroFrameW()` de
+   loialt-anim.js multiplica por esta anchura la `s` de TODAS las paradas, y
+   hasta hoy la leía de `.frame` — o sea del rayo decorativo del hero. Eso las
+   ata a una decisión de maquetación que no tiene nada que ver: al encoger
+   `.frame` para que el isotipo no quedara rebanado por la barra inferior, el
+   guía se hizo un 13% más chico en las tres paradas de móvil que el usuario
+   había afinado en #tune, sin que nada lo avisara.
+   Este elemento invisible conserva la medida ORIGINAL de `.frame`, que es con
+   la que se afinaron los valores. Tocar el tamaño del rayo del hero ya no
+   mueve el guía, y al revés. No ocupa espacio (alto 0, posición absoluta). */
+.frame-ref{ position:absolute; left:0; top:0; height:0; width:min(31.25rem,100%);
+  visibility:hidden; pointer-events:none; }
 .logo3d-mount{ position:absolute; inset:0; }
 /* Sombra de contacto para separar el logo (su cara blanca) del fondo blanco */
 .logo3d-mount canvas{ filter:drop-shadow(0 1.125rem 1.875rem rgba(2,24,56,.18)); }
@@ -1987,6 +1999,7 @@ em, i, cite, address, dfn, var{ font-style:normal; }
      Los dos `--pad-*` bajan hasta su PISO: el `max()` de la guardia del nav
      manda igual, así que esto nunca puede meter el contenido bajo una barra. */
   .frame{ width:min(54%,26svh); margin:0 auto; }
+  .frame-ref{ width:min(62%,30svh); }   /* la medida con la que se afinaron STOPS_M */
   #hero{ --pad-sup:clamp(4.5rem,9svh,6rem); --pad-inf:clamp(3rem,7svh,4.5rem); align-items:stretch; }
   .metrics-grid{ grid-template-columns:1fr 1fr; }
   .metric{ border-right:none; border-bottom:1px solid var(--line); padding:1.375rem 0; }
@@ -2838,6 +2851,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
       </div>
     </div>
     <div class="hero-right" aria-hidden="true">
+      <i class="frame-ref" aria-hidden="true"></i>
       <div class="frame">
         <!-- Punto de montaje del logo 3D (decorativo, gira solo). Ver script al final del body. -->
         <div class="logo3d-mount" id="heroLogo3D"></div>
@@ -5710,7 +5724,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
 <script type="module">
   import { initLogo3D } from './public/loialt-logo-3d.js?v=9';
   import { initLettermark3D } from './public/loialt-lettermark-3d.js?v=6';
-  import { initLoialtAnim } from './public/loialt-anim.js?v=149';
+  import { initLoialtAnim } from './public/loialt-anim.js?v=150';
 
   const registry = {};
   const logoEl = document.getElementById('heroLogo3D');
