@@ -304,7 +304,20 @@ export function initTune(api){
   // El mismo constructor sirve para las de ESCRITORIO y las de MÓVIL: son dos
   // mapas hermanos y planos (STOPS / STOPS_M), no un objeto anidado — por eso
   // el exportador de abajo puede serializar los dos con el mismo `fmt`.
-  const stopLabels = { tecnologia:'GUÍA · Tecnología (espera)', metrics:'GUÍA · Métricas (espera)', faq:'GUÍA · FAQ (espera)' };
+  // Rótulos legibles. Sin entrada aquí, la sección sale con el id interno
+  // («GUÍA · what»), que no dice nada a quien abre el panel para afinar. Los
+  // ids son heredados y NO coinciden con la etiqueta de la losa: `what` es
+  // Solución y `cta` la calculadora (ver CLAUDE.md).
+  const stopLabels = {
+    what:          'GUÍA · Solución',
+    peak:          'GUÍA · Gráfica del pico',
+    servicio:      'GUÍA · Servicio',
+    tecnologia:    'GUÍA · Tecnología (espera)',
+    productos:     'GUÍA · Productos',
+    financiamiento:'GUÍA · Financiamiento',
+    metrics:       'GUÍA · Métricas (espera)',
+    faq:           'GUÍA · FAQ (espera)',
+  };
   function seccionDeStop(sid, st, claveGuardado, rotulo){
     const det = document.createElement('details');
     const sum = document.createElement('summary');

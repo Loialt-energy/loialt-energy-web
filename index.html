@@ -3729,20 +3729,55 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
   var lenis = null;
   if(!REDUCED && typeof Lenis !== 'undefined'){
     lenis = new Lenis({ duration:1.1, easing:function(t){return Math.min(1,1.001-Math.pow(2,-10*t));}, smoothWheel:true });
-    lenis.on('scroll', function(){ if(hasGSAP) ScrollTrigger.update(); });
-    if(hasGSAP){
-      gsap.ticker.add(function(t){ lenis.raf(t*1000); });
-      gsap.ticker.lagSmoothing(0);
-    } else {
-      function raf(time){ lenis.raf(time); requestAnimationFrame(raf); }
-      requestAnimationFrame(raf);
+    /* ⚠️ EN MÓVIL LENIS NO SE ENGANCHA AL CUADRO (2026-09-29).
+       Se crea igual —el paginador y los enlaces ancla viven dentro de este
+       bloque y lo usan— pero NO se le añade el callback por cuadro ni el
+       puente al ScrollTrigger, porque en el teléfono no aporta nada y sí cuesta:
+       · el scroll táctil ya es NATIVO (`syncTouch` va apagado por defecto), así
+         que Lenis no suaviza nada ahí;
+       · `lenis.raf()` corría en CADA cuadro para no hacer nada;
+       · y `lenis.on('scroll', …)` llamaba a `ScrollTrigger.update()` además del
+         propio listener nativo de ScrollTrigger ⇒ los 49 triggers se evaluaban
+         DOS veces por gesto.
+       · el paginador que sí lo necesita está gateado a >900px.
+       Va con gate VIVO: al cruzar los 900px se engancha o se suelta, así que
+       redimensionar no deja el escritorio sin scroll suave ni el móvil con él. */
+    var mqLenis = window.matchMedia('(max-width:900px)');
+    var lenisVivo = false, tickLenis = null;
+    function puenteST(){ if(hasGSAP) ScrollTrigger.update(); }
+    function engancharLenis(){
+      if(lenisVivo || mqLenis.matches) return;
+      lenisVivo = true;
+      lenis.on('scroll', puenteST);
+      if(hasGSAP){
+        tickLenis = function(t){ lenis.raf(t*1000); };
+        gsap.ticker.add(tickLenis); gsap.ticker.lagSmoothing(0);
+      } else {
+        tickLenis = function raf(time){ lenis.raf(time); if(lenisVivo) requestAnimationFrame(raf); };
+        requestAnimationFrame(tickLenis);
+      }
+      lenis.start();
     }
+    function soltarLenis(){
+      if(!lenisVivo) return;
+      lenisVivo = false;
+      lenis.off('scroll', puenteST);
+      if(hasGSAP && tickLenis) gsap.ticker.remove(tickLenis);
+      tickLenis = null;
+      lenis.stop();
+    }
+    function modoLenis(){ if(mqLenis.matches) soltarLenis(); else engancharLenis(); }
+    modoLenis();
+    if(mqLenis.addEventListener) mqLenis.addEventListener('change', modoLenis);
     // anclas
     document.querySelectorAll('a[href^="#"]').forEach(function(a){
       a.addEventListener('click', function(e){
         var id = a.getAttribute('href'); if(id.length<2) return;
         var el = document.querySelector(id); if(!el) return;
-        e.preventDefault(); lenis.scrollTo(el, { offset:-10 });
+        e.preventDefault();
+        // con Lenis suelto (móvil) el scroll suave lo hace el navegador
+        if(lenisVivo) lenis.scrollTo(el, { offset:-10 });
+        else el.scrollIntoView({ behavior:'smooth', block:'start' });
       });
     });
     /* ---------- PAGER "DIAPOSITIVA": un gesto = una sección (full stop), con inercia ---------- */
@@ -4910,7 +4945,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
       requestAnimationFrame(function(){ modal.classList.add('open'); });
     }
     function closeModal(){
-      modal.classList.remove('open'); document.body.style.overflow=''; if(lenis) lenis.start();
+      modal.classList.remove('open'); document.body.style.overflow=''; if(lenis && lenisVivo) lenis.start();
       // El reinicio va DESPUÉS del desvanecido, para que no se vea deshacerse.
       setTimeout(function(){ modal.hidden=true; resetPanel(); }, 250);
     }
@@ -5761,7 +5796,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
   const loadTune = () => {
     if (tuneLoaded){ const p = document.getElementById('loialtTune'); if (p) p.style.display = ''; return; }
     tuneLoaded = true;
-    import('./public/loialt-tune.js?v=75').then(m => m.initTune(anim));
+    import('./public/loialt-tune.js?v=76').then(m => m.initTune(anim));
   };
   if (/tune/.test(location.hash)) loadTune();
   window.addEventListener('hashchange', () => { if (/tune/.test(location.hash)) loadTune(); });
@@ -5989,7 +6024,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
     if(mq.addEventListener) mq.addEventListener('change', aplicar);
   })();
 </script>
-<script src="./public/flow-bg.js?v=4"></script>
+<script src="./public/flow-bg.js?v=5"></script>
 
 <!-- =========================================================
      ANALÍTICA · Umami Cloud

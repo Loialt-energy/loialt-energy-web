@@ -325,8 +325,22 @@
 
   var night = createFlow(nightCanvas, 'night');
   if(!night) return; // sin WebGL: queda el fondo base navy del body
-  var day = dayCanvas ? createFlow(dayCanvas, 'day') : null;
-  if(day) dayCanvas.style.clipPath = 'inset(100% 0 0 0)'; // arranca oculto (hero es noche)
+  /* ⚠️ EL LIENZO DE DÍA NO SE CREA EN MÓVIL (2026-09-29). Antes se creaba
+     siempre y luego se escondía con `display:none`, así que el teléfono
+     mantenía vivo un CONTEXTO WEBGL entero para nada. Cada contexto reserva
+     memoria de GPU y estado del driver, y en iOS hay un tope duro de contextos
+     simultáneos por pestaña — la página ya tenía cinco.
+     Se crea PEREZOSO: en cuanto se cruza a escritorio, `aplicarModo()` lo pide.
+     Así el gate sigue VIVO y redimensionar no deja el escritorio sin su lienzo
+     de día ni al móvil con uno inútil. */
+  var day = null;
+  function asegurarDay(){
+    if(day || !dayCanvas) return day;
+    day = createFlow(dayCanvas, 'day');
+    dayCanvas.style.clipPath = 'inset(100% 0 0 0)'; // arranca oculto (hero es noche)
+    return day;
+  }
+  if(!(window.matchMedia && window.matchMedia('(max-width: 900px)').matches)) asegurarDay();
 
   // MÓVIL (<=900px): el recorte por frame NO sirve — (a) el scroll táctil corre en
   // otro hilo y el clip llega 1 frame tarde (la frontera tiembla), y (b) con las
@@ -415,6 +429,7 @@
   // volver de una pestaña oculta, así que redimensionar cambia de esquema sin
   // recargar — es la convención de gates VIVOS de todo el proyecto.
   function aplicarModo(){
+    if(!mobileMode()) asegurarDay();   // al volver a escritorio, se crea si faltaba
     if(quieto()){ pause(); pintarQuieto(); }
     else { play(); }
   }
