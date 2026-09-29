@@ -384,26 +384,56 @@
   function play(){ if(running) return; running = true; lastNow = null; raf = requestAnimationFrame(loop); }
   function pause(){ running = false; if(raf) cancelAnimationFrame(raf); raf = 0; }
 
+  /* ⚠️ EN MÓVIL EL FONDO ES ESTÁTICO (2026-09-29, decisión del usuario).
+     Medido en un teléfono de 393x852 a dpr 2: este lienzo es de PANTALLA
+     COMPLETA, o sea un buffer de 786x1704 = 1.34 MEGAPÍXELES que el shader
+     repintaba en CADA cuadro durante toda la visita. Para comparar, el rayo
+     del hero son 0.18 Mpx: era siete veces más trabajo de relleno que todo lo
+     demás junto, y el más caro de la página con diferencia.
+     Encima se desperdiciaba dos veces: desde el 2026-09-28 las losas de DÍA
+     pintan su propio fondo opaco en móvil (`textura-dia.webp`), así que allí
+     el lienzo está TAPADO — invisible — y se seguía dibujando igual.
+     Ahora se pinta UN fotograma y se para. La textura se ve idéntica quieta;
+     lo que se pierde es el movimiento lento del campo de flujo, que en un
+     teléfono apenas se percibe mientras se hace scroll.
+     El mismo camino que ya usaba `prefers-reduced-motion`, ahora compartido. */
+  function quieto(){ return REDUCED || mobileMode(); }
+
+  function pintarQuieto(){
+    if(mobileMode()){
+      if(day) dayCanvas.style.display = 'none';
+      night.drawStatic();
+      return;
+    }
+    if(day && dayCanvas.style.display === 'none') dayCanvas.style.display = '';
+    var s2 = computeDayClip();
+    if(s2 !== 'full') night.drawStatic();
+    if(day && s2 !== 'none') day.drawStatic();
+  }
+
+  // Decide el modo y lo aplica. Se vuelve a llamar al cruzar los 900px y al
+  // volver de una pestaña oculta, así que redimensionar cambia de esquema sin
+  // recargar — es la convención de gates VIVOS de todo el proyecto.
+  function aplicarModo(){
+    if(quieto()){ pause(); pintarQuieto(); }
+    else { play(); }
+  }
+
   document.addEventListener('visibilitychange', function(){
-    if(document.hidden) pause(); else if(!REDUCED) play();
+    if(document.hidden) pause(); else aplicarModo();
   });
 
-  if(REDUCED){
-    // Movimiento reducido: un fotograma estático de cada lienzo, con la frontera fija.
-    var drawReduced = function(){
-      if(mobileMode()){
-        if(day) dayCanvas.style.display = 'none';
-        night.drawStatic();
-        return;
-      }
-      if(day && dayCanvas.style.display === 'none') dayCanvas.style.display = '';
-      var s2 = computeDayClip();
-      if(s2 !== 'full') night.drawStatic();
-      if(day && s2 !== 'none') day.drawStatic();
-    };
-    drawReduced();
-    window.addEventListener('resize', drawReduced);
-  } else {
-    play();
-  }
+  // El redibujo por resize va DEBOUNCED a propósito: en el teléfono la barra de
+  // URL redimensiona el viewport en plena scrolleada y dispararía un dibujo por
+  // evento. Es el mismo motivo por el que la guardia del nav no usa
+  // ResizeObserver sobre el body (ver el regresor de Métricas del 2026-08-19).
+  var tRes = 0;
+  window.addEventListener('resize', function(){
+    if(!quieto()) return;                 // en movimiento, el propio bucle reajusta
+    clearTimeout(tRes);
+    tRes = setTimeout(pintarQuieto, 150);
+  });
+  if(mqM && mqM.addEventListener) mqM.addEventListener('change', aplicarModo);
+
+  aplicarModo();
 })();
