@@ -272,7 +272,7 @@ const STOPS_M = {
      Contrapartida, a la vista: ahora el rayo pasa POR DELANTE de la curva y del
      -42%. Las dos perillas para equilibrarlo son `opacidad` y `z-index`, las dos
      en #tune. */
-  peak:      { x: 50,   y: 50,   s: 2.55, rx: 0, ry: 0, op: 0.72, dim: 1, halo: 0, breathe: 1, z:  3 },
+  peak:      { x: 71,   y: 34,   s: 1.25, rx: 0, ry: 0, op: 0.85, dim: 1, halo: 0, breathe: 1, z:  3 },
   productos: { x: 48,   y: 61,   s: 3,    rx: 0, ry: 0, op: 0.4,  dim: 1, halo: 0, breathe: 1, z: -1 },
   metrics:   { x: 50,   y: 80.5, s: 1.75, rx: 0, ry: 0, op: 0.4,  dim: 1, halo: 0, breathe: 1, z: -1 },
 };
