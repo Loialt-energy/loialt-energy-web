@@ -1078,9 +1078,24 @@ html .quicknav, html .quicknav a, html header.nav{ transition: color .6s ease, b
      contain:layout aísla el layout interno del cálculo del ancestro sin tocar
      el scroll — verificado que el carrusel sigue midiendo 904px de scrollWidth. */
   #tecnologia .tf-steps{ display:flex; overflow-x:auto; scroll-snap-type:x mandatory; contain:layout;
+    align-items:flex-start;
     gap:0.75rem; margin:0 calc(var(--pad) * -1); padding:0 var(--pad) 0.375rem;
     -webkit-overflow-scrolling:touch; scrollbar-width:none; -ms-overflow-style:none; }
   #tecnologia .tf-steps::-webkit-scrollbar{ display:none; }
+  /* ⚠️ EL ANCHO DE TARJETA ES OBLIGATORIO (repuesto 2026-09-29). El comentario
+     de arriba describe "tarjeta ~80% del ancho" desde el principio, pero la
+     regla que lo hacía NO estaba en la hoja —se perdió en alguna poda— y sin
+     `flex-basis` los tres hijos de un flex se encogen a 1/3: se veían las 3
+     tarjetas a la vez, a 104px, con la captura del EMS en 104x69 (ilegible) y
+     sin nada que deslizar. Medido en 393x852 antes de reponerlo.
+     `align-items:flex-start` (arriba) va con esto: con `center`, heredado de la
+     rejilla de escritorio, las tarjetas de distinta altura quedaban desfasadas. */
+  #tecnologia .tf-step{ flex:0 0 78%; scroll-snap-align:center; }
+  /* Sin el tope de altura la captura recupera su 3:2 real (~306x204 en un
+     teléfono de 393) en vez de quedar recortada a 136 por el max-height, que
+     está calculado para las TRES columnas de escritorio, no para una tarjeta
+     que ocupa casi toda la pantalla. */
+  #tecnologia .tf-shot{ max-height:none; }
 .tf-step .tf-shot{ border:1px solid rgba(2,24,56,.14); box-shadow:0 0.75rem 1.75rem rgba(2,24,56,.16); }
 .tf-step .tf-step-foot{ margin:0.875rem 0 0; padding:0.75rem 0 0; background:none;
   border:0; border-top:1px solid var(--line); }
@@ -1626,6 +1641,12 @@ input[type=range]::-moz-range-thumb{ width:1.125rem; height:1.125rem; border-rad
 #faq{ min-height:78svh; }
 #faq .faq-head{ max-width:60ch; margin-bottom:1.625rem; }
 #faq .faq-head h2{ font-family:var(--font-display); font-weight:700; font-size:clamp(1.5rem,3vw,2.5rem); line-height:1.02; letter-spacing:-.02em; margin:0.875rem 0 0; }
+/* El término intermedio de arriba está en vw pensado para ESCRITORIO (3vw de
+   393px = 11.8px), así que en teléfono se clava en el piso de 1.5rem y el FAQ
+   quedaba como el único titular que no escala: 24px de altura de mayúscula
+   contra 30-33 del resto de las losas, o sea con menos jerarquía sin motivo.
+   Medido el 2026-09-29. */
+@media(max-width:900px){ #faq .faq-head h2{ font-size:clamp(1.8rem,5.6vw,2.5rem); } }
 #faq .faq-q{ font-size:.98rem; padding:1.125rem 0.25rem; }
 #faq .faq-a-inner{ font-size:.92rem; padding-bottom:1.25rem; }
 /* ESCALÓN POR ALTURA (2026-09-21). Con ocho preguntas, a 727px de alto útil la
@@ -1812,6 +1833,12 @@ footer{ position:relative; padding: clamp(4.375rem,10vh,7.5rem) var(--pad) 6rem;
 @media (max-width:900px){
   #productos{ --pad-sup:clamp(3.5rem,7.5svh,4.5rem); }
   .prod-carr{ --w:min(17rem, 72vw); margin-top:clamp(1rem,2.5svh,1.5rem); }
+  /* Medido el 2026-09-29 en 393x852: las flechas y las rayas caían en 785-825 y
+     la barra inferior empieza EXACTAMENTE en 785 ⇒ tapadas enteras. En el
+     teléfono no había forma de cambiar de producto a mano, ni pista de que
+     aquello fuera un carrusel: solo quedaba el avance automático. El alto se
+     recorta de la IMAGEN, que es de lo único que sobra aquí. */
+  .prod-media{ height:clamp(7rem, calc(100svh - 38rem), 18rem); }
 }
 /* Laptops bajas: la losa tiene que caber en 100svh con el pager */
 @media (min-width:901px) and (max-height:780px){
@@ -1866,7 +1893,16 @@ em, i, cite, address, dfn, var{ font-style:normal; }
 .socio-logo-catl{   height:clamp(2.8rem,5.6vw,4.25rem); filter:grayscale(1) brightness(3.59); }
 .socio-sep{ width:1px; height:clamp(2.25rem,5vh,3.25rem);
   background:linear-gradient(180deg,transparent,var(--line-strong),transparent); }
-@media(max-width:900px){ .socios{ gap:clamp(1.5rem,9vw,2.75rem); margin-top:1.25rem; } }
+/* MÓVIL: la fila de socios NO cabe en 393px y envuelve, con dos efectos feos
+   medidos el 2026-09-29: CATL se quedaba arriba compartiendo línea con el
+   separador (y por tanto se centraba CON él, ~21px corrido respecto al rótulo),
+   y el separador quedaba de rayita suelta flotando a su derecha. Un divisor
+   vertical solo tiene sentido ENTRE dos cosas en la misma fila, así que en
+   teléfono se apilan y el separador desaparece. */
+@media(max-width:900px){
+  .socios{ flex-direction:column; gap:clamp(1.25rem,4vh,2rem); margin-top:1.25rem; }
+  .socio-sep{ display:none; }
+}
 /* ── QUICKNAV PAGINADA EN MÓVIL (2026-09-03) ─────────────────────────────────
    Con las 6 secciones en una sola fila, "Productos" se salía de pantalla y
    quedaba cortado. Se parte en 2 páginas de 3. Las flechas solo existen en
@@ -1938,11 +1974,20 @@ em, i, cite, address, dfn, var{ font-style:normal; }
   .hero-left{ display:flex; flex-direction:column; align-items:center; }
   .hero-lettermark{ align-self:flex-start; margin-left:0; } /* wordmark anclado a la IZQUIERDA */
   .hero-left .hero-h1, .hero-left .hero-sub{ align-self:stretch; text-align:left; }
-  .hero-h1{ margin-top:clamp(2rem,5.2svh,3.625rem); }
+  .hero-h1{ margin-top:clamp(1.25rem,3.4svh,2.5rem); }
   .hero-cta-row{ justify-content:center; }
-  /* rayo centrado en su espacio, arriba de la quicknav (escala con la pantalla) */
-  .frame{ width:min(62%,30svh); margin:0 auto; }
-  #hero{ --pad-sup:clamp(6rem,13svh,8.25rem); --pad-inf:clamp(5.5rem,12.5svh,7.875rem); align-items:stretch; }
+  /* ⚠️ EL RAYO TIENE QUE ACABAR POR ENCIMA DE LA BARRA (2026-09-29). Medido en
+     393x852: el lienzo iba de 566 a 840 y la barra empieza en 785 ⇒ los últimos
+     55 px del isotipo quedaban DETRÁS de ella. Mientras la barra era casi
+     transparente apenas se notaba; al subirle el velo para que sus palabras se
+     leyeran, el tapado pasó a leerse como un TAJO RECTO en la marca, justo en
+     lo primero que se ve al abrir la página. Se recupera el alto de tres sitios
+     —aire de arriba, margen del titular y tamaño del rayo— en vez de encoger
+     solo el rayo, que a la escala necesaria quedaba ridículo.
+     Los dos `--pad-*` bajan hasta su PISO: el `max()` de la guardia del nav
+     manda igual, así que esto nunca puede meter el contenido bajo una barra. */
+  .frame{ width:min(54%,26svh); margin:0 auto; }
+  #hero{ --pad-sup:clamp(4.5rem,9svh,6rem); --pad-inf:clamp(3rem,7svh,4.5rem); align-items:stretch; }
   .metrics-grid{ grid-template-columns:1fr 1fr; }
   .metric{ border-right:none; border-bottom:1px solid var(--line); padding:1.375rem 0; }
   .metric:nth-child(odd){ border-right:1px solid var(--line); padding-right:1.375rem; }
@@ -1986,6 +2031,18 @@ em, i, cite, address, dfn, var{ font-style:normal; }
     gap:clamp(0.65rem,2.7vw,1.05rem); padding:0.8rem clamp(0.9rem,3.2vw,1.3rem);
   }
   html.tone-night .quicknav{ border-top-color:rgba(255,255,255,.14); }
+  /* ⚠️ EL VELO DEL 14% NO SIRVE EN MÓVIL (2026-09-29). En escritorio esta barra
+     SOLO se ve sobre el hero —`html.nav-docked .quicknav{opacity:0}` la apaga a
+     partir de la 2ª losa— así que su transparencia se calibró contra un fondo
+     que siempre es oscuro. En teléfono la barra está fija sobre las 11 losas, y
+     el desenfoque NO OSCURECE: un render blanco grande sigue blanco después de
+     emborronarlo. Medido en Financiamiento, con el contenedor claro detrás:
+     «Tecnología» daba 2.19:1 y «Productos» 2.65:1 (contra 14:1 en FAQ). Con el
+     velo al 62% el peor caso sube por encima de 4.5:1 y la barra deja de
+     depender de lo que haya debajo. El blur se queda: es lo que da el material,
+     pero no es lo que da el contraste. */
+  html.tone-night .quicknav{ background-color:rgba(10,14,20,.62); }
+  html.tone-day   .quicknav{ background-color:rgba(251,251,251,.78); }
   /* páginas: se oculta la que no toca */
   .quicknav[data-pagina="1"] a[data-qn="2"],
   .quicknav[data-pagina="2"] a[data-qn="1"]{ display:none; }
@@ -2607,6 +2664,37 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
     margin-inline: calc(var(--crece-x) * -1);
   }
 }
+/* ─────────────────────────────────────────────────────────────────────────────
+   TELÉFONOS BAJOS (<=800px de alto: 360x780, 375x667, iPhone SE…).
+   Mismo patrón de escalones por altura que Tecnología/Productos/Financiamiento
+   en escritorio, pero del lado del teléfono, que hasta ahora no tenía ninguno.
+   Medido el 2026-09-29 a 360x780: el Hero se pasaba 58px y Tecnología otros 58,
+   y en los dos casos lo que sobraba caía DEBAJO de la barra inferior fija — el
+   rayo del hero rebanado y los pies de las tarjetas del EMS tapados.
+   Los `--pad-*` NO se tocan: ya están en su piso, que es la guardia del nav.
+   ⚠️ VA AL FINAL DE LA HOJA A PROPÓSITO: sus selectores (`.frame`, `.hero-h1`)
+   tienen la MISMA especificidad que los del bloque móvil general, que está más
+   arriba, así que solo ganan por orden. Moverlo hacia arriba lo desactiva en
+   silencio — pasó en el primer intento y la medición no cambió ni un píxel.
+   ───────────────────────────────────────────────────────────────────────────── */
+@media (max-width:900px) and (max-height:800px){
+  .hero-h1{ margin-top:clamp(0.75rem,2svh,1.5rem); }
+  .frame{ width:min(48%,24svh); }
+  #tecnologia .prob-head{ margin-bottom:clamp(0.5rem,1.5vh,0.875rem); }
+  #tecnologia .tech-grid{ margin-top:0.5rem; }
+  #tecnologia .tech-flow{ margin-top:0.5rem; }
+  #tecnologia .tech-stats{ margin-top:0.5rem; }
+  /* la tarjeta sigue siendo protagonista (62% del ancho, captura ~203x135),
+     lejos de los 104x69 que dejaba la ausencia de `flex-basis` */
+  #tecnologia .tf-step{ flex:0 0 62%; }
+  /* Métricas: al apilar los dos logos de socios (ver el bloque de `.socios`)
+     la losa creció y el segundo logo cerraba 21px DENTRO de la barra. Se
+     recupera del aire del titular y del gancho de «Nuestros socios», no del
+     tamaño de los logos, que ya están igualados por la altura de su letra. */
+  #metrics .metrics-title{ margin-bottom:1.5rem; }
+  #metrics #trust{ margin-top:1rem !important; }
+}
+
 </style>
 </head>
 <body>
