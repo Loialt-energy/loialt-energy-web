@@ -255,8 +255,8 @@ const STOPS_M = {
   // como `.section` no crea contexto de apilamiento, un hijo en `z:-1` se
   // pintaba ANTES que ese fondo y quedaba invisible. Sin foto y en noche, la
   // losa vuelve a ser transparente y el rayo se ve como en las demás.
-  // Valores de partida, pendientes de afinar por el usuario en #tune.
-  what:      { x: 50,   y: 78,   s: 1.25, rx: 0, ry: 0, op: 1,    dim: 1, halo: 0, breathe: 1, z: -1 },
+  // Afinados por el usuario en #tune desde el teléfono (2026-09-29).
+  what:      { x: 50,   y: 86,   s: 1.7,  rx: 0, ry: 0, op: 1,    dim: 1, halo: 0, breathe: 1, z: -1 },
   peak:      { x: 50,   y: 50,   s: 2.55, rx: 0, ry: 0, op: 0.72, dim: 1, halo: 0, breathe: 1, z: -1 },
   productos: { x: 48,   y: 61,   s: 3,    rx: 0, ry: 0, op: 0.4,  dim: 1, halo: 0, breathe: 1, z: -1 },
   metrics:   { x: 50,   y: 80.5, s: 1.75, rx: 0, ry: 0, op: 0.4,  dim: 1, halo: 0, breathe: 1, z: -1 },

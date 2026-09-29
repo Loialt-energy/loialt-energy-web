@@ -2703,14 +2703,20 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
    estaban en .12 —prácticamente transparentes— y suben a .55.
    ───────────────────────────────────────────────────────────────────────────── */
 @media (max-width:900px){
-  header.nav, header.nav.scrolled, .quicknav, .social-fab,
-  .svc-tabs, .svc-detail, .svc-tab.active, .peak-inner,
-  .modal-panel, .modal-backdrop{
+  /* ⚠️ SOLO LAS DOS BARRAS FIJAS (corregido el 2026-09-29). El primer intento
+     apagó el desenfoque en las SIETE superficies y el usuario notó enseguida
+     que «la Gráfica perdió el efecto glass» — con razón.
+     La distinción que importa no es «cuántas hay» sino si son FIJAS: en la
+     barra de arriba y la de abajo, lo que tienen detrás cambia en CADA cuadro
+     de scroll, así que el desenfoque se recalcula entero 60 veces por segundo.
+     Las tarjetas (`.peak-inner`, las de Servicio, el modal) SCROLLEAN con la
+     página: su fondo es casi estático y el navegador lo cachea, así que ahí el
+     cristal sale barato. Se quedan. */
+  header.nav, header.nav.scrolled, .quicknav{
     -webkit-backdrop-filter:none !important; backdrop-filter:none !important;
   }
   html.tone-night header.nav.scrolled{ background-color:rgba(10,14,20,.72); }
   html.tone-day   header.nav.scrolled{ background-color:rgba(251,251,251,.82); }
-  .svc-tabs, .svc-detail{ background:rgba(8,14,24,.55); }
   /* El grano se va del teléfono: es una capa FIJA a pantalla completa con
      `mix-blend-mode:multiply`, o sea que el compositor tiene que mezclarla
      contra todo lo que hay debajo en cada cuadro. A `opacity:.025` su aporte
@@ -3728,45 +3734,43 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
   /* ---------- LENIS smooth scroll ---------- */
   var lenis = null;
   if(!REDUCED && typeof Lenis !== 'undefined'){
-    lenis = new Lenis({ duration:1.1, easing:function(t){return Math.min(1,1.001-Math.pow(2,-10*t));}, smoothWheel:true });
-    /* ⚠️ EN MÓVIL LENIS NO SE ENGANCHA AL CUADRO (2026-09-29).
-       Se crea igual —el paginador y los enlaces ancla viven dentro de este
-       bloque y lo usan— pero NO se le añade el callback por cuadro ni el
-       puente al ScrollTrigger, porque en el teléfono no aporta nada y sí cuesta:
-       · el scroll táctil ya es NATIVO (`syncTouch` va apagado por defecto), así
-         que Lenis no suaviza nada ahí;
-       · `lenis.raf()` corría en CADA cuadro para no hacer nada;
-       · y `lenis.on('scroll', …)` llamaba a `ScrollTrigger.update()` además del
-         propio listener nativo de ScrollTrigger ⇒ los 49 triggers se evaluaban
-         DOS veces por gesto.
-       · el paginador que sí lo necesita está gateado a >900px.
-       Va con gate VIVO: al cruzar los 900px se engancha o se suelta, así que
-       redimensionar no deja el escritorio sin scroll suave ni el móvil con él. */
+    /* ⚠️ EN MÓVIL LENIS SE DESTRUYE, NO SE PARA (2026-09-29).
+       Motivo, y es un fallo que llegó a producción: `lenis.stop()` deja de
+       ANIMAR pero Lenis sigue capturando la rueda con `preventDefault`, así que
+       la página se queda sin scroll — en un teléfono real no se nota porque el
+       táctil es nativo, pero en el emulador de dispositivo de DevTools (que
+       scrollea con rueda) y en una ventana de escritorio angosta la página
+       queda MUERTA. Lo reportó el usuario.
+       Por qué se suelta en móvil: el táctil ya es nativo (`syncTouch` apagado),
+       su `raf()` corría en cada cuadro para nada, y su puente llamaba a
+       `ScrollTrigger.update()` ADEMÁS del listener nativo del propio
+       ScrollTrigger ⇒ los 49 triggers se evaluaban dos veces por gesto.
+       Se crea PEREZOSO y se destruye al cruzar los 900px, en los dos sentidos:
+       el paginador y los enlaces ancla cierran sobre la variable `lenis`, así
+       que al reasignarla ven siempre la instancia vigente (o `null`). */
     var mqLenis = window.matchMedia('(max-width:900px)');
-    var lenisVivo = false, tickLenis = null;
+    var tickLenis = null;
     function puenteST(){ if(hasGSAP) ScrollTrigger.update(); }
-    function engancharLenis(){
-      if(lenisVivo || mqLenis.matches) return;
-      lenisVivo = true;
+    function crearLenis(){
+      if(lenis || mqLenis.matches) return;
+      lenis = new Lenis({ duration:1.1, easing:function(t){return Math.min(1,1.001-Math.pow(2,-10*t));}, smoothWheel:true });
       lenis.on('scroll', puenteST);
       if(hasGSAP){
-        tickLenis = function(t){ lenis.raf(t*1000); };
+        tickLenis = function(t){ if(lenis) lenis.raf(t*1000); };
         gsap.ticker.add(tickLenis); gsap.ticker.lagSmoothing(0);
       } else {
-        tickLenis = function raf(time){ lenis.raf(time); if(lenisVivo) requestAnimationFrame(raf); };
+        tickLenis = function raf(time){ if(!lenis) return; lenis.raf(time); requestAnimationFrame(raf); };
         requestAnimationFrame(tickLenis);
       }
-      lenis.start();
     }
-    function soltarLenis(){
-      if(!lenisVivo) return;
-      lenisVivo = false;
-      lenis.off('scroll', puenteST);
+    function destruirLenis(){
+      if(!lenis) return;
       if(hasGSAP && tickLenis) gsap.ticker.remove(tickLenis);
       tickLenis = null;
-      lenis.stop();
+      lenis.destroy();   // suelta sus listeners de rueda: SIN esto no hay scroll
+      lenis = null;
     }
-    function modoLenis(){ if(mqLenis.matches) soltarLenis(); else engancharLenis(); }
+    function modoLenis(){ if(mqLenis.matches) destruirLenis(); else crearLenis(); }
     modoLenis();
     if(mqLenis.addEventListener) mqLenis.addEventListener('change', modoLenis);
     // anclas
@@ -3776,7 +3780,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
         var el = document.querySelector(id); if(!el) return;
         e.preventDefault();
         // con Lenis suelto (móvil) el scroll suave lo hace el navegador
-        if(lenisVivo) lenis.scrollTo(el, { offset:-10 });
+        if(lenis) lenis.scrollTo(el, { offset:-10 });
         else el.scrollIntoView({ behavior:'smooth', block:'start' });
       });
     });
@@ -4945,7 +4949,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
       requestAnimationFrame(function(){ modal.classList.add('open'); });
     }
     function closeModal(){
-      modal.classList.remove('open'); document.body.style.overflow=''; if(lenis && lenisVivo) lenis.start();
+      modal.classList.remove('open'); document.body.style.overflow=''; if(lenis) lenis.start();
       // El reinicio va DESPUÉS del desvanecido, para que no se vea deshacerse.
       setTimeout(function(){ modal.hidden=true; resetPanel(); }, 250);
     }
@@ -5774,7 +5778,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
 <script type="module">
   import { initLogo3D } from './public/loialt-logo-3d.js?v=9';
   import { initLettermark3D } from './public/loialt-lettermark-3d.js?v=6';
-  import { initLoialtAnim } from './public/loialt-anim.js?v=151';
+  import { initLoialtAnim } from './public/loialt-anim.js?v=152';
 
   const registry = {};
   const logoEl = document.getElementById('heroLogo3D');
