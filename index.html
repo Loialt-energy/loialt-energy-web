@@ -2140,6 +2140,16 @@ em, i, cite, address, dfn, var{ font-style:normal; }
      cual, sin recortar) y el TEXTO es el que se acomoda adentro. */
   #what{
     position:relative;
+    /* ⚠️ SIN RECORTE, y hace falta decirlo aquí porque la regla de ESCRITORIO
+       (`#what{ overflow:hidden }`, ~línea 582) NO está dentro de ninguna media
+       query y por tanto aplica también en el teléfono. Al quitar la foto creí
+       haberlo eliminado y solo lo había quitado de ESTE bloque: el resultado es
+       que el rayo del tramo Solución→Gráfica —que vive montado en esta losa y
+       se posiciona más allá de su caja— se recortaba contra el borde inferior y
+       DESAPARECÍA a mitad de viaje. El usuario lo reportó dos veces.
+       En escritorio el recorte SÍ se queda: allí es deliberado (el rayo de la
+       parada de Solución sangra a propósito contra el borde de la losa). */
+    overflow:visible;
     /* PANTALLA COMPLETA, como excepción deliberada. En móvil la regla base es
        `.section{ min-height:0 }` —las losas se dimensionan por su contenido y
        el scroll es libre—, y solo `#hero` y `#problems` la recuperan, porque

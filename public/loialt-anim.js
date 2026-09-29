@@ -787,7 +787,12 @@ export function initLoialtAnim(registry){
      quitarle la foto de fondo (2026-09-29). El rayo se queda montado en
      Solución y se posiciona más allá de su caja para cruzar sobre la Gráfica;
      con el recorte anterior habría desaparecido a mitad del tramo. */
-  const TRAMO_M = { de: 'what', a: 'peak', giro: 180 };
+  /* `giro: 360` — VUELTA ENTERA, no media (2026-09-29, pedido del usuario).
+     Con 180 el rayo llegaba a la Gráfica volteado: la media vuelta es el
+     lenguaje de los tramos de ESCRITORIO que tocan la Gráfica (`peakLeg`), pero
+     allí el siguiente tramo lo endereza. Aquí el tramo es el último, así que se
+     quedaba del revés. Con 360 sale y llega con la misma cara. */
+  const TRAMO_M = { de: 'what', a: 'peak', giro: 360 };
 
   function tramoU(){
     const A = document.getElementById(TRAMO_M.de), B = document.getElementById(TRAMO_M.a);
