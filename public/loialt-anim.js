@@ -644,6 +644,35 @@ export function initLoialtAnim(registry){
     return null;
   }
 
+  /* MÓVIL: el stop activo se elige por VISIBILIDAD, no por «quién ocupa el
+     centro» (2026-09-29, pedido del usuario: «el render aparece una vez que ya
+     estás en la sección, en lugar de estar desde antes y entrar con el scroll»).
+     Con `sectionAtCenterId()` la losa no es la activa hasta que su caja contiene
+     el centro de la pantalla, o sea cuando ya estás dentro: el rayo se monta
+     tarde y aparece de golpe. Mirando cuánto de la PANTALLA cubre la losa, se
+     monta mientras todavía está entrando desde abajo y sube de opacidad antes
+     de que llegues — que es lo que hace que se lea como parte de la losa y no
+     como algo que aparece.
+     Umbral con HISTÉRESIS (0.22 para entrar, 0.10 para soltar): sin ella, con
+     dos losas con parada a la vez en pantalla el activo oscilaría cuadro a
+     cuadro y el rayo parpadearía. Es el mismo criterio que ya gobierna la
+     entrada de Críticos (0.75 / 0.35).
+     Si ninguna losa con parada llega al umbral se cae a `sectionAtCenterId()`,
+     que es lo que sigue usando el dock de la batería y el resto de la lógica. */
+  function activeStopId(){
+    if (!mqMobile.matches) return sectionAtCenterId();
+    let best = null, bestVis = 0;
+    for (const sec of document.querySelectorAll('section.section')){
+      if (!STOPS_M[sec.id]) continue;
+      const r = sec.getBoundingClientRect();
+      const vis = Math.min(r.bottom, innerHeight) - Math.max(r.top, 0);
+      if (vis > bestVis){ bestVis = vis; best = sec.id; }
+    }
+    if (!best) return sectionAtCenterId();
+    const pegado = guide.mode === 'stuck' && guide.stuckAt === best;
+    return (bestVis / innerHeight) >= (pegado ? 0.10 : 0.22) ? best : sectionAtCenterId();
+  }
+
   function neighborStop(id, dir){ // sección vecina (en la dirección del scroll) con stop
     const secs = Array.from(document.querySelectorAll('section.section'));
     const i = secs.findIndex(s => s.id === id);
@@ -1038,7 +1067,7 @@ export function initLoialtAnim(registry){
     const prob = document.getElementById('problems');
     const pr = prob ? prob.getBoundingClientRect() : null;
     const probTop = pr ? pr.top : 1e9;
-    const centerId = sectionAtCenterId();
+    const centerId = activeStopId();
     const moving = Math.abs(window.scrollY - guide.lastY) > 1.5;
     guide.lastY = window.scrollY;
 
