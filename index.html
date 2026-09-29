@@ -2114,17 +2114,23 @@ em, i, cite, address, dfn, var{ font-style:normal; }
   #what{
     position:relative;
     justify-content:flex-start; min-height:0;
-    /* aspect-ratio 768/1286 (no 768/1376, el alto completo del archivo): la
-       sección es 90px más corta que la foto, así que con overflow:hidden se
-       recorta esa franja del FONDO — justo lo necesario para esconder la
-       marca de agua (medida: empieza en y=1304 de 1376). No es zoom: la foto
-       sigue a su escala natural (background-size:100% auto), solo se le corta
-       un pedazo de tierra abajo. El archivo no se toca. */
-    aspect-ratio:768/1286; height:auto; overflow:hidden;
+    /* ALTO DE LA LOSA — va emparejado con el zoom de la foto de más abajo, y
+       los dos números salen del mismo encuadre; cambiar uno sin el otro rompe
+       la losa. Con la foto al 128%, esta proporción enseña el 83.0% de su alto:
+       lo justo para que los contenedores (que acaban en el 81%) salgan enteros
+       y para que la marca de agua del generador (empieza en el 94.8%) siga
+       fuera de cuadro gracias al overflow:hidden. El archivo no se toca. */
+    aspect-ratio:1/1.90; height:auto; overflow:hidden;
     /* Las cinco perillas del texto, como ENTRADAS. Los escalones de más abajo
        mueven ESTAS variables y nunca una relación ya calculada — es la regla
        que ya mordió dos veces en este proyecto (ver la guardia del nav). */
     --sol-gap:clamp(0.3rem,.8svh,0.5rem);
+    /* separación TÍTULO → ficha 01. Va aparte de --sol-gap a propósito: el
+       titular tiene que despegarse del cuerpo, y con la misma perilla que el
+       resto quedaban los tres huecos iguales (medido el 2026-09-29: 5px entre
+       el h2 y la ficha 01, o sea ninguna jerarquía — se leía como un renglón
+       más del mismo bloque). */
+    --sol-tit:clamp(0.8rem,2.1svh,1.15rem);
     --sol-pad:clamp(0.25rem,.6svh,0.4rem);
     --sol-h3:clamp(1.05rem,3.4vw,1.3rem);
     --sol-p:clamp(.8rem,2.3vw,.9rem);
@@ -2147,7 +2153,26 @@ em, i, cite, address, dfn, var{ font-style:normal; }
       url('./public/solucion-bess.webp');
     background-repeat:no-repeat, no-repeat, no-repeat;
     background-position:top center, top center, top center;
-    background-size:100% 100%, 100% 100%, 100% auto;
+    /* ⚠️ LA FOTO VA AL 128%, NO AL 100% (2026-09-29). Es lo que mueve el cuello
+       de botella de esta losa, y sin ello no hay nada que repartir.
+       El texto solo puede vivir sobre el CIELO LISO, que acaba en y=876 de 1376
+       del archivo. A escala natural esa franja mide `ancho x 1.141`, o sea 448px
+       a 393 de ancho; quitados los 68 de la guardia del nav quedan 381px para un
+       texto que ya ocupaba 384. Cualquier aire que se le diera al título salía
+       del contenido y lo empujaba sobre los árboles, donde el contraste se cae
+       en picado (medido: navy 2.67:1 y el verde 1.84:1 justo debajo del filo).
+       Ampliar la foto baja el horizonte proporcionalmente: al 128% la franja
+       pasa a `ancho x 1.460` y libera ~125px.
+       EL TOPE LO PONEN LOS CONTENEDORES, que son el remate de la losa: medidos
+       sobre el archivo, ocupan del 12.5% al 86.6% del ANCHO y su base está en el
+       81% del ALTO. Al 128% centrado se recorta un 10.9% por lado (queda
+       10.9%–89.1%, no se toca ninguno) y la losa enseña hasta el 83.0% del alto,
+       con los contenedores dentro. Más zoom exige más `aspect-ratio`, y por eso
+       los dos valores van juntos.
+       Si alguna vez se cambia la foto hay que volver a medir las tres cosas:
+       dónde acaba su cielo liso, dónde están los bordes laterales del producto
+       y a qué altura está su base. */
+    background-size:100% 100%, 100% 100%, 128% auto;
   }
   #what .wrap{ position:relative; z-index:1; }
   /* VELO (2026-09-28). Primera versión: una caja de vidrio detrás del bloque de
@@ -2164,7 +2189,7 @@ em, i, cite, address, dfn, var{ font-style:normal; }
      La rampa es larga a propósito (arranca en el 20% y no llega a su máximo
      hasta el borde) y se queda en .44: el usuario pidió que no acabe tan blanco
      y que no se note el cambio. */
-  #what .sol-md > h2{ font-size:clamp(1.85rem,6.2vw,2.4rem); }   /* azul marino: hereda --ink de [data-theme="day"] */
+  #what .sol-md > h2{ font-size:clamp(1.85rem,6.2vw,2.4rem); margin-bottom:var(--sol-tit); }   /* azul marino: hereda --ink de [data-theme="day"] */
   #what .sol-sub{ display:none; }
   #what .sol-note{ display:none; }   /* nota de depreciación fiscal: se quita (igual que desktop, línea ~644) */
   #what .sol-md{ margin-top:0; row-gap:var(--sol-gap); }
@@ -2217,8 +2242,29 @@ em, i, cite, address, dfn, var{ font-style:normal; }
   #what #solp-1 .sol-m-h3::before{ content:"02"; }
   #what #solp-2 .sol-m-h3::before{ content:"03"; }
   #what .sol-m p{ font-size:var(--sol-p); line-height:1.2; color:var(--ink); font-weight:500; margin:0 0 .12rem; }
-  #what .sol-m-stats{ display:grid; grid-template-columns:1fr 1fr; gap:.15rem .6rem; margin-top:.25rem; }
-  #what .sol-m-stat{ font-size:var(--sol-stat); line-height:1.15; color:var(--ink); }
+  /* CIFRAS EN FILA QUE ENVUELVE, no en rejilla 2x2 (2026-09-29).
+     La rejilla tenía un fallo estructural: la primera cifra de la ficha 01
+     —«100 kWh–2 MWh (Ampliable >20 MWh)»— mide 216px de ancho NATURAL contra
+     una columna de 172, así que partía en dos líneas y, como en una rejilla
+     toda la fila crece con su celda más alta, arrastraba consigo a «3.5–5 años
+     (ROI)», que ocupa 91px. Trece píxeles perdidos por una sola celda, y el
+     bloque quedaba escalonado. Ninguna de las otras once pasa de 139px.
+     Con flex cada cifra es INDIVISIBLE (`nowrap`) y la línea corta ENTRE
+     cifras: la larga se lleva su compañera corta al lado y no rompe nada.
+     Es además a prueba de futuro — en inglés o con una cifra nueva más larga
+     lo peor que pasa es que se use una línea más, no que se descuadre.
+     Mismo lenguaje visual que la fila de cifras de escritorio (separadores
+     finos entre valores), en vez de la rejilla que no se usa en ningún otro
+     sitio de la página. */
+  #what .sol-m-stats{ display:flex; flex-wrap:wrap; gap:.1rem 1.15rem; margin-top:.25rem; }
+  #what .sol-m-stat{ font-size:var(--sol-stat); line-height:1.15; color:var(--ink); white-space:nowrap; }
+  /* ⚠️ SIN separador `·` entre cifras, y no por gusto: se probó con un
+     `::before` y, al envolver la fila, el punto se queda HUÉRFANO al principio
+     de la línea siguiente («· ± 0.1 Hz»), que es justo lo que no se puede
+     evitar en CSS —no hay forma de suprimir un pseudo-elemento solo cuando
+     abre línea—. Se ve clarísimo en inglés, donde cada cifra ocupa su renglón.
+     Lo que separa las cifras es el hueco (1.15rem, casi 5x el espacio normal
+     entre palabras) más el verde en negrita con el que abre cada una. */
   /* Cifras en VERDE OSCURO (2026-09-28), y el contorno ya no hace falta.
      ⚠️ El verde claro de marca es IMPOSIBLE aquí, y no por poco: medido contra
      el fondo compuesto de esta losa (foto + velo), `--energy` da **1.02:1** y
@@ -2249,15 +2295,17 @@ em, i, cite, address, dfn, var{ font-style:normal; }
 @media (max-width:400px){
   #what{
     --sol-gap:clamp(0.2rem,.5svh,0.32rem);
-    --sol-pad:clamp(0.14rem,.32svh,0.24rem);
+    --sol-tit:clamp(0.6rem,1.55svh,0.9rem);
+    --sol-pad:clamp(0.1rem,.24svh,0.18rem);
   }
-  #what .sol-m p{ line-height:1.16; }
-  #what .sol-m-h3{ margin-bottom:.1rem; }
-  #what .sol-m-stats{ margin-top:.16rem; }
+  #what .sol-m p{ line-height:1.16; margin-bottom:.06rem; }
+  #what .sol-m-h3{ margin-bottom:.05rem; }
+  #what .sol-m-stats{ margin-top:.08rem; }
 }
 @media (max-width:345px){
   #what{
     --sol-gap:0.16rem;
+    --sol-tit:0.5rem;
     --sol-pad:0.1rem;
     --sol-h3:1rem;
     --sol-p:.78rem;
