@@ -1157,6 +1157,22 @@ html .quicknav, html .quicknav a, html header.nav{ transition: color .6s ease, b
   #peak .peak-savings .big{ font-size:clamp(3rem,15vw,4.5rem); text-shadow:none; }
   #peak .peak-caption{ justify-content:center; gap:0.5rem 1.25rem; margin-top:0.875rem; }
   #peak .peak-caption .lg:last-child{ display:none; }   /* fuera la frase final; quedan las 2 de swatch */
+  /* ⚠️ EL RAYO VA ENTRE EL CRISTAL Y LA GRÁFICA (2026-09-29).
+     Tres capas, y el orden importa: la burbuja `.peak-inner` en z:2, el rayo en
+     z:3 (`GUIDE.zTramo` y la parada `peak` de STOPS_M) y el CONTENIDO de la
+     gráfica en z:4.
+     Por qué: con el rayo en z:-1 quedaba detrás de la burbuja y encima
+     desenfocado por su `backdrop-filter` — invisible al llegar, que es lo que
+     reportó el usuario. Subirlo por encima de todo lo hacía visible pero se
+     comía la curva y el -42%, que son el remate de la losa. Metiéndolo EN MEDIO
+     se ven las dos cosas: el rayo entero y nítido sobre el cristal, y la curva,
+     la cifra y la leyenda por delante de él.
+     `position:relative` es obligatorio en los cuatro: sin él el `z-index` no
+     aplica, y `.peak-savings` viene en `position:static` desde la regla móvil
+     de arriba. */
+  #peak .peak-top, #peak .chart-shell, #peak .peak-savings, #peak .peak-caption{
+    position:relative; z-index:4;
+  }
 }
 /* Tecnología (sintetizada): copy corto + cifras + imagen + flow de plataforma */
 /* Contenido alineado arriba (título cerca del techo, no centrado) */
@@ -5778,7 +5794,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
 <script type="module">
   import { initLogo3D } from './public/loialt-logo-3d.js?v=9';
   import { initLettermark3D } from './public/loialt-lettermark-3d.js?v=6';
-  import { initLoialtAnim } from './public/loialt-anim.js?v=154';
+  import { initLoialtAnim } from './public/loialt-anim.js?v=155';
 
   const registry = {};
   const logoEl = document.getElementById('heroLogo3D');

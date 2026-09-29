@@ -86,6 +86,14 @@ export const GUIDE = {
   // (Rebase/overshoot al aterrizar — probado 2026-08-25, DESCARTADO: el usuario lo
   // sintió trabado. En su lugar, aterrizaje sin rebase con easeOutQuint: la
   // velocidad baja gradualmente hasta parar, sin pasarse y corregir. Ver tripFrame.)
+  /* Nivel del rayo DURANTE el tramo de móvil. Tiene que superar el z:2 de
+     `.peak-inner` —la burbuja de la Gráfica, que vive en el contexto RAÍZ
+     porque ni `.wrap` ni la losa crean uno— o el rayo se mete detrás de ella a
+     mitad de viaje y desaparece. Y tiene que quedarse MUY por debajo de los
+     overlays fijos (nav y quicknav 9000, viñeta 9997) para no taparlos: por eso
+     3 y no el `zFly` 9999 que usa el vuelo de escritorio, que sí va portaleado
+     a <body> y compite con ellos. */
+  zTramo: 3,
   maxRes: 640,              // tope de RESOLUCIÓN del canvas del guía (px); tamaños mayores
                             // se logran con transform:scale (GPU) — evita render 4K a 60fps
   mStopRes: 384,            // igual, pero SOLO para las paradas de MÓVIL. No toca el acople
@@ -257,7 +265,14 @@ const STOPS_M = {
   // losa vuelve a ser transparente y el rayo se ve como en las demás.
   // Afinados por el usuario en #tune desde el teléfono (2026-09-29).
   what:      { x: 50,   y: 86,   s: 1.7,  rx: 0, ry: 0, op: 1,    dim: 1, halo: 0, breathe: 1, z: -1 },
-  peak:      { x: 50,   y: 50,   s: 2.55, rx: 0, ry: 0, op: 0.72, dim: 1, halo: 0, breathe: 1, z: -1 },
+  /* ⚠️ `z: 3`, NO -1 (2026-09-29). La burbuja de la gráfica (`.peak-inner`) está
+     en z:2 del contexto raíz, así que con el -1 de las demás paradas el rayo
+     quedaba DETRÁS de ella — y encima desenfocado por su `backdrop-filter`.
+     Resultado: invisible al llegar, que es lo que reportó el usuario.
+     Contrapartida, a la vista: ahora el rayo pasa POR DELANTE de la curva y del
+     -42%. Las dos perillas para equilibrarlo son `opacidad` y `z-index`, las dos
+     en #tune. */
+  peak:      { x: 50,   y: 50,   s: 2.55, rx: 0, ry: 0, op: 0.72, dim: 1, halo: 0, breathe: 1, z:  3 },
   productos: { x: 48,   y: 61,   s: 3,    rx: 0, ry: 0, op: 0.4,  dim: 1, halo: 0, breathe: 1, z: -1 },
   metrics:   { x: 50,   y: 80.5, s: 1.75, rx: 0, ry: 0, op: 0.4,  dim: 1, halo: 0, breathe: 1, z: -1 },
 };
@@ -811,7 +826,7 @@ export function initLoialtAnim(registry){
       left: (li(ax, bx) - t.rA.left) + 'px',
       top:  (li(ay, by) - t.rA.top)  + 'px',
       margin: '0',
-      zIndex: String(pc(stB.z, -1)),
+      zIndex: String(GUIDE.zTramo != null ? GUIDE.zTramo : 3),
       transform: `translate(-50%,-50%) scale(${size / guide.baseSize})`,
       opacity: String(li(pc(stA.op,1), pc(stB.op,1)) * (fade != null ? fade : 1)),
       pointerEvents: 'none',
