@@ -752,6 +752,88 @@ export function initLoialtAnim(registry){
     return true;
   }
 
+  /* ═══ TRAMO LIGADO AL SCROLL · Solución → Gráfica, SOLO MÓVIL (2026-09-29) ═══
+     En escritorio los viajes los dispara el paginador: son saltos discretos con
+     duración propia (`tripFrame`). En móvil no hay paginador, así que un viaje
+     tiene que ir atado al DEDO: el rayo interpola su pose entre las dos paradas
+     según cuánto has bajado. Es un camino distinto, no una variante de aquél.
+
+     NO CUESTA CUADROS, y esa fue la razón para hacerlo: el lienzo 3D ya se
+     dibuja en cada cuadro mientras está en pantalla (eso es lo caro y ya se
+     paga). Un tramo solo cambia su `transform` y su ángulo — aritmética.
+
+     El progreso sale de la FRONTERA entre las dos losas, no de un temporizador:
+     `u = 1 - (borde inferior de Solución) / alto de pantalla`. Vale 0 con la
+     frontera abajo del todo (estás en Solución) y 1 con la frontera arriba
+     (estás en la Gráfica), es monótono con el scroll y funciona igual en los
+     dos sentidos. Al ser geométrico, no se desincroniza nunca.
+
+     ⚠️ Esto solo es posible porque `#what` DEJÓ de tener `overflow:hidden` al
+     quitarle la foto de fondo (2026-09-29). El rayo se queda montado en
+     Solución y se posiciona más allá de su caja para cruzar sobre la Gráfica;
+     con el recorte anterior habría desaparecido a mitad del tramo. */
+  const TRAMO_M = { de: 'what', a: 'peak', giro: 180 };
+
+  function tramoU(){
+    const A = document.getElementById(TRAMO_M.de), B = document.getElementById(TRAMO_M.a);
+    if (!A || !B) return null;
+    const rA = A.getBoundingClientRect(), rB = B.getBoundingClientRect();
+    const u = 1 - rA.bottom / innerHeight;
+    if (u < -0.25 || u > 1.25) return null;          // ni cerca del tramo
+    return { u: Math.max(0, Math.min(1, u)), rA, rB };
+  }
+
+  function mountInTramo(t, fade){
+    const stA = stopOf(TRAMO_M.de), stB = stopOf(TRAMO_M.a);
+    const secA = document.getElementById(TRAMO_M.de);
+    if (!stA || !stB || !secA || !gEl) return false;
+    const e = easeInOutCubic(t.u);        // sale y llega suave; se mueve en el medio
+    const li = (a, b) => a + (b - a) * e;
+    const pc = (v, d) => (v != null ? v : d);
+
+    // El punto de cada parada se calcula en coords de VIEWPORT (cada una es un
+    // % de SU losa, y las dos losas son cajas distintas) y luego se pasa a
+    // coordenadas de la losa A, que es donde vive el elemento.
+    const ax = t.rA.left + pc(stA.x,50)/100 * t.rA.width;
+    const ay = t.rA.top  + pc(stA.y,50)/100 * t.rA.height;
+    const bx = t.rB.left + pc(stB.x,50)/100 * t.rB.width;
+    const by = t.rB.top  + pc(stB.y,50)/100 * t.rB.height;
+
+    const size = li(Math.max(120, stopUnit(stA, t.rA) * (stA.s || 1)),
+                    Math.max(120, stopUnit(stB, t.rB) * (stB.s || 1)));
+    if (gEl.parentElement !== secA) secA.appendChild(gEl);
+    if (!guide.baseSize) guide.baseSize = Math.min(size, GUIDE.mStopRes || 384);
+    // ⚠️ La resolución del lienzo NO se toca durante el tramo: rebasearla a
+    // media carrera hace parpadear el canvas (mismo motivo por el que
+    // `mountInStop` solo rebasea con desviaciones grandes).
+    Object.assign(gEl.style, {
+      display: '', position: 'absolute',
+      left: (li(ax, bx) - t.rA.left) + 'px',
+      top:  (li(ay, by) - t.rA.top)  + 'px',
+      margin: '0',
+      zIndex: String(pc(stB.z, -1)),
+      transform: `translate(-50%,-50%) scale(${size / guide.baseSize})`,
+      opacity: String(li(pc(stA.op,1), pc(stB.op,1)) * (fade != null ? fade : 1)),
+      pointerEvents: 'none',
+    });
+    const cv = gCanvas(); if (cv) cv.style.opacity = '1';
+    const dim = li(pc(stA.dim,1), pc(stB.dim,1));
+    gEl.style.filter = dim !== 1 ? `brightness(${dim})` : '';
+    gEl.classList.remove('g-breathe');   // en marcha no respira
+    /* El giro se ACUMULA sobre el `ryAcc` con el que se entró al tramo, no se
+       suma suelto: así al soltar en cualquiera de los dos extremos `mountInStop`
+       —que ya suma `guide.ryAcc`— continúa desde el ángulo exacto y no hay
+       brinco. Y como se recalcula desde `tramoBase` en cada cuadro, subir
+       DESHACE el giro en vez de acumularlo. */
+    if (guide.tramoBase == null) guide.tramoBase = guide.ryAcc || 0;
+    guide.ryAcc = (guide.tramoBase + e * TRAMO_M.giro) % 360;
+    setPivot(li(pc(stA.rx,0), pc(stB.rx,0)), li(pc(stA.ry,0), pc(stB.ry,0)) + guide.ryAcc,
+             li(pc(stA.rz,0), pc(stB.rz,0)));
+    if (gHalo) gHalo.style.opacity = haloDe(0, fade);
+    guide.mode = 'stuck';
+    return true;
+  }
+
   function mountInDock(){ // PEGADO a la batería (sticky, nativo con la losa)
     const vis = document.querySelector('#problems .battery-vis');
     const well = document.querySelector('#problems .bat-well');
@@ -1195,6 +1277,28 @@ export function initLoialtAnim(registry){
       const cur = guide.stuckAt;
       const st = stopOf(cur);
       if (!st){ hideGuide(); return; }
+      // Tramo ligado al scroll (solo móvil, solo Solución↔Gráfica)
+      const tr = (mqMobile.matches && (cur === TRAMO_M.de || cur === TRAMO_M.a)) ? tramoU() : null;
+      if (tr){
+        // La compuerta de Solución sigue valiendo en la primera mitad: el rayo
+        // no entra hasta que el texto de #what arranca sus cifras (ver solGate).
+        const gated = tr.u < 0.5 && TRAMO_M.de === 'what' && !guide.solGate;
+        if (!gated) guide.fade = Math.min(1, guide.fade + dt / (tr.u < 0.5 ? 0.7 : 0.25));
+        // En los extremos se suelta a la parada correspondiente: `mountInStop`
+        // fija `guide.stuckAt`, así que el relevo es limpio en los dos sentidos.
+        /* ⚠️ Los extremos llevan TOLERANCIA (0.005), no `<=0` y `>=1` exactos.
+           Medido: en el reposo de la Gráfica `u` se queda en ~0.996 y nunca
+           toca el 1 —el borde de la losa cae en -3px por redondeo de subpíxel—,
+           así que con la comparación exacta el rayo tenía la pose correcta pero
+           el motor seguía creyéndose «en tramo», y `guide.stuckAt` no pasaba
+           nunca a `peak`. Sin daño visible, pero deja la histéresis de
+           `activeStopId()` mirando la parada equivocada. */
+        if (tr.u <= 0.005){ guide.tramoBase = null; mountInStop(TRAMO_M.de, guide.fade); return; }
+        if (tr.u >= 0.995){ guide.tramoBase = null; mountInStop(TRAMO_M.a,  guide.fade); return; }
+        mountInTramo(tr, guide.fade);
+        return;
+      }
+      guide.tramoBase = null;
       if (centerId === cur){
         // despegue anticipado: la losa empieza a irse → programa el viaje YA
         // (el temporizador corre desde el arranque del gesto)
