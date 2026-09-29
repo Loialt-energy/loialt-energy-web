@@ -137,8 +137,36 @@ export function initLogo3D({ container, interactive = true, autoRotate = true, a
     renderer.setSize(w(), h());
   }
 
+  /* ⚠️ NO SE DIBUJA LO QUE NO SE VE (2026-09-29).
+     Este bucle era INCONDICIONAL: llamaba a `renderer.render()` 60 veces por
+     segundo para siempre, mirara o no si el lienzo estaba en pantalla. Y de
+     este módulo hay DOS instancias vivas a la vez (el rayo del hero y el
+     guía), así que el teléfono pagaba dos contextos WebGL dibujando sin parar
+     durante toda la visita, incluso con el lienzo fuera de cuadro o en
+     `display:none`. Estaba anotado como causa conocida en loialt-anim.js desde
+     el 2026-09-22, sin arreglar.
+     El IntersectionObserver cubre los dos casos de un golpe: un elemento en
+     `display:none` NUNCA intersecta, y uno fuera del viewport tampoco. Sirve
+     igual para el guía, que durante los vuelos va portaleado a <body> con
+     `position:fixed` — a diferencia de `offsetParent`, que ahí daría null y
+     lo apagaría justo mientras vuela.
+     El lienzo CONSERVA su último cuadro mientras no se pinta (el borrado del
+     drawing buffer afecta a `toDataURL`, no a lo que compone el navegador),
+     así que un rayo quieto fuera de pantalla se ve igual, no en blanco.
+     `getDelta()` se consume también en el camino apagado: si no, al volver
+     devolvería el hueco entero de golpe y el giro pegaría un salto. */
+  let enPantalla = true;      // si no hay IO, se comporta como antes
+  let ioVis = null;
+  if (typeof IntersectionObserver === 'function'){
+    ioVis = new IntersectionObserver(function(es){
+      enPantalla = es.some(function(e){ return e.isIntersecting; });
+    }, { rootMargin: '25%' });   // empieza a pintar un poco antes de entrar
+    ioVis.observe(container);
+  }
+
   function animate(){
     raf = requestAnimationFrame(animate);
+    if(document.hidden || !enPantalla){ clock.getDelta(); return; }
     if(controls){
       controls.update();
     } else if(autoRotate){
@@ -152,6 +180,7 @@ export function initLogo3D({ container, interactive = true, autoRotate = true, a
   function dispose(){
     if(raf) cancelAnimationFrame(raf);
     if(ro) ro.disconnect();
+    if(ioVis) ioVis.disconnect();
     if(controls) controls.dispose();
     renderer.dispose();
     if(renderer.domElement.parentNode) renderer.domElement.parentNode.removeChild(renderer.domElement);
