@@ -2717,6 +2717,18 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
      visual en una pantalla de teléfono es nulo, así que se paga una capa de
      pantalla completa por nada. En escritorio se queda. */
   .grain{ display:none; }
+  /* ⚠️ 382 KB QUE EL TELÉFONO DESCARGABA PARA NADA (medido el 2026-09-29).
+     El carrusel de Nosotros va en `display:none` en móvil desde hace meses, y
+     `#solRender` también — pero sus imágenes SE DESCARGABAN IGUAL: cinco fondos
+     del carrusel (nosotros-bess 140 KB, bess-campo 85, solucion-bess 77,
+     bess-desierto 44, bess-montana 36) sobre un total de página de 1552 KB.
+     O sea el 25% del peso, en imágenes que nadie llega a ver nunca.
+     Ocultar el contenedor NO basta; hay que anular la URL. Los fondos del
+     carrusel van en el atributo `style` de cada `.ns-slide`, así que la única
+     forma de pisarlos desde la hoja es con `!important` — es el caso en el que
+     está justificado, no un atajo. */
+  .ns-slide{ background-image:none !important; }
+  #solRender{ background-image:none; }
 }
 
 @media (max-width:900px) and (max-height:800px){
