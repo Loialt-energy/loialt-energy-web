@@ -997,8 +997,18 @@ html .quicknav, html .quicknav a, html header.nav{ transition: color .6s ease, b
    Los retardos por palabra los escribe el JS (varían según entrada o salida),
    aquí solo va el estado y la transición. */
 .te-w{ display:inline-block; opacity:0; filter:blur(12px);
-  transition:opacity var(--te-dur,.3s) ease, filter var(--te-dur,.3s) ease;
-  will-change:opacity, filter; }
+  transition:opacity var(--te-dur,.3s) ease, filter var(--te-dur,.3s) ease; }
+/* ⚠️ `will-change` VA SOLO MIENTRAS ANIMA, nunca en la regla base (2026-09-29).
+   Estaba en `.te-w` de forma permanente, y `.te-w` es CADA PALABRA de los tres
+   paneles de Servicio: medidas, **170 en la página**. Cada una quedaba promovida
+   a su propia capa de composición para toda la visita, y `will-change:filter`
+   además obliga al navegador a reservar una superficie de render por elemento.
+   Eso no ralentiza esa losa: ralentiza la página ENTERA, porque el compositor
+   arrastra 170 capas en cada cuadro de scroll, esté Servicio en pantalla o no.
+   Es el sospechoso principal del traqueteo que reportó el usuario.
+   La promesa de `will-change` solo tiene sentido en el instante previo a animar;
+   dejarla puesta es justo lo que la documentación de la propiedad desaconseja. */
+#servicio.te-mueve .te-w{ will-change:opacity, filter; }
 .svc-panel.te-on .te-w{ opacity:1; filter:blur(0px); }
 @media (prefers-reduced-motion: reduce){
   .te-w{ opacity:1; filter:none; transition:none; }
@@ -2677,6 +2687,38 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
    arriba, así que solo ganan por orden. Moverlo hacia arriba lo desactiva en
    silencio — pasó en el primer intento y la medición no cambió ni un píxel.
    ───────────────────────────────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────────────────────
+   SIN `backdrop-filter` EN MÓVIL (2026-09-29).
+   Es de lo más caro que existe en una GPU de teléfono: obliga a re-muestrear y
+   DESENFOCAR todo lo que pasa por detrás, y en un elemento FIJO —la barra de
+   arriba y la de abajo— eso ocurre en CADA cuadro mientras se scrollea, porque
+   el fondo cambia siempre. Medidas 7 superficies con desenfoque visibles en el
+   teléfono: las dos barras, la píldora de Redes, las pestañas y el panel de
+   Servicio, la pestaña activa y la burbuja de la Gráfica.
+   El efecto «cristal» es un lujo de escritorio; aquí se paga en cuadros.
+   ⚠️ Lo que sostenía la legibilidad de estas piezas era el desenfoque, no la
+   opacidad (está documentado para el quicknav), así que al quitarlo hay que
+   SUBIR el fondo o el texto se pierde. La barra de abajo ya se subió a .62/.78
+   el 2026-09-29 por otro motivo y no necesita más; las tarjetas de Servicio
+   estaban en .12 —prácticamente transparentes— y suben a .55.
+   ───────────────────────────────────────────────────────────────────────────── */
+@media (max-width:900px){
+  header.nav, header.nav.scrolled, .quicknav, .social-fab,
+  .svc-tabs, .svc-detail, .svc-tab.active, .peak-inner,
+  .modal-panel, .modal-backdrop{
+    -webkit-backdrop-filter:none !important; backdrop-filter:none !important;
+  }
+  html.tone-night header.nav.scrolled{ background-color:rgba(10,14,20,.72); }
+  html.tone-day   header.nav.scrolled{ background-color:rgba(251,251,251,.82); }
+  .svc-tabs, .svc-detail{ background:rgba(8,14,24,.55); }
+  /* El grano se va del teléfono: es una capa FIJA a pantalla completa con
+     `mix-blend-mode:multiply`, o sea que el compositor tiene que mezclarla
+     contra todo lo que hay debajo en cada cuadro. A `opacity:.025` su aporte
+     visual en una pantalla de teléfono es nulo, así que se paga una capa de
+     pantalla completa por nada. En escritorio se queda. */
+  .grain{ display:none; }
+}
+
 @media (max-width:900px) and (max-height:800px){
   .hero-h1{ margin-top:clamp(0.75rem,2svh,1.5rem); }
   .frame{ width:min(48%,24svh); }
@@ -5493,6 +5535,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
     if(!tabs.length || !panels.length) return;
     var palabras=panels.map(function(p){ return teEnvolver(p); });
     var cur=0, tmr=null, corriendo=false;
+    var sec=document.getElementById('servicio');
     var girarSistema=function(){};   // la reasigna el bloque del render 3D, más abajo
 
     // reparte la ventana entre las palabras; inverso = última primero
@@ -5536,6 +5579,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
       if(REDUCED || sale===entra){ cur=idx; fijar(idx); return; }
       if(tmr) clearTimeout(tmr);
       corriendo=true;
+      sec.classList.add('te-mueve');   // promueve las capas SOLO durante la transición
       girarSistema();   // el render arranca su tercio de vuelta AQUÍ, con la salida
                         // del texto, para que sea un solo gesto y no dos eventos
       // 1) SALIDA de la fase actual (orden inverso)
@@ -5551,7 +5595,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
         entra.setAttribute('aria-hidden','false');
         void entra.offsetWidth;                 // fuerza reflujo: sin esto el
         entra.classList.add('te-on');           // navegador agrupa ambos cambios
-        tmr=setTimeout(function(){ corriendo=false; tmr=null; },
+        tmr=setTimeout(function(){ corriendo=false; tmr=null; sec.classList.remove('te-mueve'); },
                        (TE_ENTRADA_VENTANA+TE_ENTRADA_DUR)*1000);
       }, tSalida*1000);
     }
