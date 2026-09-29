@@ -1943,22 +1943,10 @@ em, i, cite, address, dfn, var{ font-style:normal; }
   #faq{ min-height:0; }
   /* frontera noche/día SIN lag: en móvil el lienzo día está apagado (flow-bg) y
      cada losa de día pinta su fondo hueso — la línea viaja nativa con el scroll */
-  /* TEXTURA DE DÍA EN MÓVIL (2026-09-28). Antes era un degradado plano y se veía
-     blanco y vacío comparado con escritorio, donde el fondo lo pinta el lienzo
-     animado `#flowbgDay`.
-     ⚠️ NO se enciende ese lienzo en móvil, y las dos razones siguen en pie
-     (están en flow-bg.js): el recorte por frame llega tarde con el scroll táctil
-     —la frontera tiembla— y con las losas compactas puede haber una losa de día
-     ENTERA en pantalla, con noche arriba Y abajo, que un solo `inset` no sabe
-     representar. En vez de eso se sirve **una captura estática** de ese mismo
-     shader en paleta de día: misma textura, cero GPU y cero recorte por cuadro.
-     Es el mismo recurso que ya se usó para el render del rayo en Métricas móvil.
-     Si se cambia la paleta de `flow-bg.js`, hay que volver a capturarla. */
-  section[data-theme="day"]{
-    background-color:var(--bg);
-    background-image:url('./public/textura-dia.webp');
-    background-size:cover; background-position:center; background-repeat:no-repeat;
-  }
+  /* La textura de día de las losas claras se retiró el 2026-09-29: en móvil ya no
+   hay ninguna losa de día (ver el interruptor `movil-oscuro`), así que la regla
+   no encajaba con nada. `public/textura-dia.webp` queda sin uso en el repo. */
+
   /* estas secciones traen padding con ID desde desktop → re-amarrarlas al ritmo */
   /* Mismo motivo que arriba: entradas, no atajo. El horizontal lo pone ya la
      regla base de .section con var(--pad), así que no hace falta repetirlo. */
@@ -2126,66 +2114,47 @@ em, i, cite, address, dfn, var{ font-style:normal; }
      cual, sin recortar) y el TEXTO es el que se acomoda adentro. */
   #what{
     position:relative;
-    justify-content:flex-start; min-height:0;
-    /* ALTO DE LA LOSA — va emparejado con el zoom de la foto de más abajo, y
-       los dos números salen del mismo encuadre; cambiar uno sin el otro rompe
-       la losa. Con la foto al 128%, esta proporción enseña el 83.0% de su alto:
-       lo justo para que los contenedores (que acaban en el 81%) salgan enteros
-       y para que la marca de agua del generador (empieza en el 94.8%) siga
-       fuera de cuadro gracias al overflow:hidden. El archivo no se toca. */
-    aspect-ratio:1/1.90; height:auto; overflow:hidden;
-    /* Las cinco perillas del texto, como ENTRADAS. Los escalones de más abajo
-       mueven ESTAS variables y nunca una relación ya calculada — es la regla
-       que ya mordió dos veces en este proyecto (ver la guardia del nav). */
-    --sol-gap:clamp(0.3rem,.8svh,0.5rem);
-    /* separación TÍTULO → ficha 01. Va aparte de --sol-gap a propósito: el
-       titular tiene que despegarse del cuerpo, y con la misma perilla que el
-       resto quedaban los tres huecos iguales (medido el 2026-09-29: 5px entre
-       el h2 y la ficha 01, o sea ninguna jerarquía — se leía como un renglón
-       más del mismo bloque). */
-    --sol-tit:clamp(0.8rem,2.1svh,1.15rem);
-    --sol-pad:clamp(0.25rem,.6svh,0.4rem);
-    --sol-h3:clamp(1.05rem,3.4vw,1.3rem);
-    --sol-p:clamp(.8rem,2.3vw,.9rem);
-    --sol-stat:clamp(.72rem,2.1vw,.82rem);
-    /* va como --pad-sup, no como padding-top: así el piso del guardia del nav
-       (--zona-sup, medido del nav real) no se puede saltar. Ver initGuardiaNav. */
+    /* PANTALLA COMPLETA, como excepción deliberada. En móvil la regla base es
+       `.section{ min-height:0 }` —las losas se dimensionan por su contenido y
+       el scroll es libre—, y solo `#hero` y `#problems` la recuperan, porque
+       tienen una pieza visual que necesita sitio. Solución entra ahora en ese
+       grupo: sin la foto, el texto cierra a ~567px y el resto de la pantalla es
+       el hueco donde se dibuja el rayo (parada `what` de STOPS_M). Sin esto la
+       losa se encogería a la altura del texto y no habría dónde ponerlo. */
+    min-height:100svh;
+    justify-content:flex-start;
+    /* SIN FOTO DE FONDO (2026-09-29, pedido del usuario). Con la losa en tono
+       noche, la foto de los contenedores sale de aquí y el hueco que deja lo
+       ocupa el rayo (parada `what` de STOPS_M en loialt-anim.js).
+       Se va con ella TODO el andamiaje que existía solo para sostenerla, y que
+       fue el origen de casi todos los problemas de esta losa en el teléfono:
+       el `aspect-ratio` que ataba el alto a la proporción del archivo, el
+       `overflow:hidden` que escondía la marca de agua del generador —y que de
+       paso RECORTABA el texto en vez de dejar crecer la losa—, el zoom del
+       128% con su alto emparejado, el velo claro en degradado y el oscurecido
+       navy. Sin foto, esta vuelve a ser una losa normal: la altura la manda su
+       contenido y el fondo lo pone el lienzo de flow, como en las demás.
+       El archivo `public/solucion-bess.webp` se queda en el repo (lo usa
+       `#solRender` en escritorio). */
+
+    /* Las perillas del texto, como ENTRADAS. Los escalones de más abajo mueven
+       ESTAS variables y nunca una relación ya calculada — la regla que ya mordió
+       dos veces en este proyecto (ver la guardia del nav).
+       Ya no hay techo de cielo que respetar, así que van HOLGADAS: la losa crece
+       con su contenido como cualquier otra y el scroll de móvil es libre. */
+    --sol-gap:clamp(0.65rem,1.8svh,1.05rem);
+    /* separación TÍTULO → ficha 01, aparte de --sol-gap a propósito: con la
+       misma perilla que el resto los tres huecos salían iguales y el titular se
+       leía como un renglón más del bloque. */
+    --sol-tit:clamp(1.15rem,2.8svh,1.75rem);
+    --sol-pad:clamp(0.6rem,1.5svh,0.95rem);
+    --sol-h3:clamp(1.15rem,4vw,1.45rem);
+    --sol-p:clamp(.88rem,2.6vw,1rem);
+    --sol-stat:clamp(.78rem,2.3vw,.88rem);
+    /* van como --pad-*, no como padding: así el piso de la guardia del nav
+       (--zona-sup / --zona-inf, medidos del nav real) no se puede saltar. */
     --pad-sup:clamp(3.75rem,7.5svh,4.25rem);
     --pad-inf:clamp(0.5rem,1.5svh,0.875rem);
-    /* Capa de oscurecido UNIFORME (mismo color en ambas paradas = no es un
-       degradado/fade como los que se descartaron antes; solo baja parejo el
-       brillo de toda la foto para que el texto y el verde resalten más). */
-    background-image:
-      linear-gradient(180deg,
-        rgba(251,251,251,0)    20%,
-        rgba(251,251,251,.10)  40%,
-        rgba(251,251,251,.26)  60%,
-        rgba(251,251,251,.38)  80%,
-        rgba(251,251,251,.44) 100%),
-      linear-gradient(rgba(2,24,56,.2), rgba(2,24,56,.2)),
-      url('./public/solucion-bess.webp');
-    background-repeat:no-repeat, no-repeat, no-repeat;
-    background-position:top center, top center, top center;
-    /* ⚠️ LA FOTO VA AL 128%, NO AL 100% (2026-09-29). Es lo que mueve el cuello
-       de botella de esta losa, y sin ello no hay nada que repartir.
-       El texto solo puede vivir sobre el CIELO LISO, que acaba en y=876 de 1376
-       del archivo. A escala natural esa franja mide `ancho x 1.141`, o sea 448px
-       a 393 de ancho; quitados los 68 de la guardia del nav quedan 381px para un
-       texto que ya ocupaba 384. Cualquier aire que se le diera al título salía
-       del contenido y lo empujaba sobre los árboles, donde el contraste se cae
-       en picado (medido: navy 2.67:1 y el verde 1.84:1 justo debajo del filo).
-       Ampliar la foto baja el horizonte proporcionalmente: al 128% la franja
-       pasa a `ancho x 1.460` y libera ~125px.
-       EL TOPE LO PONEN LOS CONTENEDORES, que son el remate de la losa: medidos
-       sobre el archivo, ocupan del 12.5% al 86.6% del ANCHO y su base está en el
-       81% del ALTO. Al 128% centrado se recorta un 10.9% por lado (queda
-       10.9%–89.1%, no se toca ninguno) y la losa enseña hasta el 83.0% del alto,
-       con los contenedores dentro. Más zoom exige más `aspect-ratio`, y por eso
-       los dos valores van juntos.
-       Si alguna vez se cambia la foto hay que volver a medir las tres cosas:
-       dónde acaba su cielo liso, dónde están los bordes laterales del producto
-       y a qué altura está su base. */
-    background-size:100% 100%, 100% 100%, 128% auto;
   }
   #what .wrap{ position:relative; z-index:1; }
   /* VELO (2026-09-28). Primera versión: una caja de vidrio detrás del bloque de
@@ -2278,55 +2247,25 @@ em, i, cite, address, dfn, var{ font-style:normal; }
      abre línea—. Se ve clarísimo en inglés, donde cada cifra ocupa su renglón.
      Lo que separa las cifras es el hueco (1.15rem, casi 5x el espacio normal
      entre palabras) más el verde en negrita con el que abre cada una. */
-  /* Cifras en VERDE OSCURO (2026-09-28), y el contorno ya no hace falta.
-     ⚠️ El verde claro de marca es IMPOSIBLE aquí, y no por poco: medido contra
-     el fondo compuesto de esta losa (foto + velo), `--energy` da **1.02:1** y
-     `--energy-deep` 1.51:1, cuando el mínimo es 4.5. Y no se arregla con el
-     velo: un verde claro necesita fondo OSCURO para leerse, pero el texto de
-     esta losa es azul marino y necesita fondo CLARO. Sobre un mismo fondo son
-     incompatibles, así que la cifra tiene que oscurecerse.
-     Con este verde da **5.36:1** y conserva el matiz verde que distingue la
-     cifra de su etiqueta. El `-webkit-text-stroke` era el parche que sostenía
-     al verde claro; con un verde que se lee solo, sobra. */
+  /* Cifras en el VERDE DE MARCA (2026-09-29).
+     ⚠️ Estuvieron en verde MUY OSCURO (#1b3d12) del 28 al 29 de septiembre, y
+     conviene saber por qué para no «corregirlo» de vuelta: mientras la losa
+     tenía la foto de fondo y el texto era azul marino, un verde claro era
+     IMPOSIBLE aquí —medido, `--energy` daba 1.02:1 y `--energy-deep` 1.51:1—,
+     porque un verde claro necesita fondo oscuro y el texto navy necesitaba
+     fondo claro: sobre un mismo fondo son incompatibles.
+     Al pasar la losa a noche y quitar la foto, la incompatibilidad desaparece
+     —ahora TODO el texto quiere fondo oscuro— y el verde oscuro pasaría a ser
+     el ilegible. Vuelve al token, que es lo que usan las demás losas de noche. */
   #what .sol-m-stat b{
-    color:#1b3d12; font-weight:700;
+    color:var(--energy); font-weight:700;
   }
   #what .sol-m-stat i{ font-style:normal; font-weight:500; }
   .foot-cols{ grid-template-columns:1fr 1fr; }
 }
 
-/* ESCALONES DE SOLUCIÓN POR ANCHO (2026-09-28) — los primeros del sitio para
-   MÓVIL; los otros nueve están todos acotados con min-width:901px.
-   Por qué por ANCHO y no por altura: el alto de #what sale de `aspect-ratio`,
-   o sea que SOLO depende del ancho, mientras que el texto no encoge por debajo
-   de ~494px (sus clamp() tocan su piso en rem) y encima gana líneas al
-   angostarse. Las dos magnitudes se cruzan, y el cruce lo gobierna el ancho.
-   Mueven las cinco ENTRADAS, nunca una relación calculada.
-   Se recorta AIRE antes que LETRA, como en Tecnología y en FAQ. `--sol-stat`
-   NO se toca: su piso (.72rem = 11.5px) ya está en el límite de lectura que
-   este proyecto fijó al auditar el móvil. */
-@media (max-width:400px){
-  #what{
-    --sol-gap:clamp(0.2rem,.5svh,0.32rem);
-    --sol-tit:clamp(0.6rem,1.55svh,0.9rem);
-    --sol-pad:clamp(0.1rem,.24svh,0.18rem);
-  }
-  #what .sol-m p{ line-height:1.16; margin-bottom:.06rem; }
-  #what .sol-m-h3{ margin-bottom:.05rem; }
-  #what .sol-m-stats{ margin-top:.08rem; }
-}
-@media (max-width:345px){
-  #what{
-    --sol-gap:0.16rem;
-    --sol-tit:0.5rem;
-    --sol-pad:0.1rem;
-    --sol-h3:1rem;
-    --sol-p:.78rem;
-  }
-  #what .sol-md > h2{ font-size:1.5rem; }   /* el titular es lo que más aire da a este ancho */
-  #what .sol-m p{ line-height:1.12; }
-  #what .sol-m-stat{ line-height:1.08; }
-}
+
+
 
 @media (max-width:560px){
   .foot-cols{ grid-template-columns:1fr; }
@@ -5718,6 +5657,11 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
     var meta = document.getElementById('metaTheme'), el = document.documentElement;
     var curTone = null;
     function applyTone(t){
+      // En móvil TODO es noche (ver el interruptor de `movil-oscuro`), así que
+      // los overlays fijos no deben consultar el mapa: sin esto la barra y el
+      // selector de idioma usarían tinta de día sobre losas oscuras al pasar
+      // por Solución y Tecnología.
+      if(document.documentElement.classList.contains('movil-oscuro')) t = 'night';
       if(t === curTone) return; curTone = t;
       el.classList.remove('tone-night','tone-day');
       el.classList.add(t === 'night' ? 'tone-night' : 'tone-day');
@@ -5739,7 +5683,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
 <script type="module">
   import { initLogo3D } from './public/loialt-logo-3d.js?v=9';
   import { initLettermark3D } from './public/loialt-lettermark-3d.js?v=6';
-  import { initLoialtAnim } from './public/loialt-anim.js?v=150';
+  import { initLoialtAnim } from './public/loialt-anim.js?v=151';
 
   const registry = {};
   const logoEl = document.getElementById('heroLogo3D');
@@ -5955,6 +5899,40 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
 </div>
 
 <!-- FONDO SHADER "FLOW FIELD" -->
+<!-- MODO OSCURO TOTAL EN MÓVIL (2026-09-29, pedido del usuario).
+     Solo dos losas eran de día: Solución y Tecnología. Se cambia el ATRIBUTO,
+     no el CSS: `[data-theme="night"]` aparece en 51 reglas de la hoja, así que
+     extender cada selector con un `html.movil-oscuro …` sería 51 sitios donde
+     equivocarse, y duplicar el bloque de tokens deja dos listas que mantener
+     sincronizadas — el error que este proyecto ya ha cometido varias veces.
+     Volteando el atributo, las 51 reglas funcionan sin tocar ninguna.
+
+     ⚠️ VA AQUÍ, antes de `flow-bg.js`, y no en el IIFE del `DOMContentLoaded`:
+     flow-bg construye su mapa de secciones leyendo `data-theme` al ejecutarse,
+     y si lo hiciera antes del cambio se quedaría con la frontera día/noche
+     vieja (invisible en móvil, donde su lienzo de día está apagado, pero mal
+     en cuanto se redimensiona a escritorio).
+
+     Guarda el tono original en `data-tema-original` para poder restaurarlo:
+     el gate es VIVO, así que cruzar los 900px devuelve Solución y Tecnología
+     a día sin recargar, como el resto de gates del proyecto. -->
+<script>
+  (function(){
+    var mq = window.matchMedia('(max-width:900px)');
+    var secs = document.querySelectorAll('section[data-theme]');
+    function aplicar(){
+      var movil = mq.matches;
+      for(var i=0;i<secs.length;i++){
+        var s = secs[i];
+        if(!s.getAttribute('data-tema-original')) s.setAttribute('data-tema-original', s.getAttribute('data-theme'));
+        s.setAttribute('data-theme', movil ? 'night' : s.getAttribute('data-tema-original'));
+      }
+      document.documentElement.classList.toggle('movil-oscuro', movil);
+    }
+    aplicar();
+    if(mq.addEventListener) mq.addEventListener('change', aplicar);
+  })();
+</script>
 <script src="./public/flow-bg.js?v=4"></script>
 
 <!-- =========================================================
