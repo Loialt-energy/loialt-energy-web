@@ -1411,9 +1411,24 @@ html .quicknav, html .quicknav a, html header.nav{ transition: color .6s ease, b
 .fin-card p{ color:var(--ink-dim); font-size:.9rem; line-height:1.65; margin:0; }
 /* Hueco de la cifra comercial. Loialt aún no las da, así que va VACÍO y se
    oculta solo: la sección se publica limpia y añadir el dato es escribirlo. */
-.fin-dato{ margin-top:0.875rem; font-family:var(--font-mono); font-size:.72rem;
-  letter-spacing:.04em; color:var(--ink); }
+/* La frase de cierre de cada tarjeta. Copiada de la presentación comercial
+   (2026-09-29, pedido del usuario), que es donde se vio primero que estas
+   tarjetas piden un remate en negrita después del párrafo.
+   Deja de ser MONO y pasa a la tipografía del cuerpo en negrita: en la
+   presentación es una frase que se lee, no un dato técnico, y el mono la hacía
+   parecer una etiqueta. El verde es el pedido explícito del usuario para TODAS
+   las negritas de esta losa. */
+.fin-dato{ margin-top:0.875rem; font-family:inherit; font-size:.9rem;
+  line-height:1.65; font-weight:700; letter-spacing:0; color:var(--energy-deep); }
 .fin-dato:empty{ display:none; }
+/* La negrita que va DENTRO del párrafo (BaaS: «si no hay ahorros, no hay
+   pagos») pide el mismo verde. `.fin-card p` usa --ink-dim, así que el <b>
+   tiene que declarar su color o lo hereda apagado. */
+.fin-card p b{ color:var(--energy-deep); font-weight:700; }
+/* Financiamiento es losa de NOCHE desde 2026-09-22, y ahí el verde profundo
+   queda oscuro sobre fondo oscuro: sube al verde de marca, como ya hace .fin-k. */
+[data-theme="night"] .fin-dato,
+[data-theme="night"] .fin-card p b{ color:var(--energy); }
 [data-theme="night"] .fin-k{ color:var(--energy); }
 
 /* ESCALONES POR ALTURA. ⚠️ No son opcionales: sin ellos el detector de solapes
@@ -3616,8 +3631,8 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
         <div class="fin-body">
           <div class="fin-k" data-i18n="financiamiento.div1">Venta directa</div>
           <h3 data-i18n="financiamiento.h31">Propiedad total</h3>
-          <p data-i18n="financiamiento.p2">Inviertes una vez y el sistema es tuyo desde el primer día. El ahorro que genera te queda íntegro durante toda su vida útil.</p>
-          <div class="fin-dato" data-i18n="financiamiento.dato1"></div>
+          <p data-i18n="financiamiento.p2">Inviertes una sola vez y el sistema es tuyo desde el primer día. El ahorro que genera te queda íntegro durante toda su vida útil.</p>
+          <div class="fin-dato" data-i18n="financiamiento.dato1">Recupera tu inversión en menos tiempo.</div>
         </div>
       </div>
 
@@ -3627,7 +3642,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
           <div class="fin-k" data-i18n="financiamiento.div2">Arrendamiento</div>
           <h3 data-i18n="financiamiento.h32">Inversión inicial mínima</h3>
           <p data-i18n="financiamiento.p3">Empiezas con una inversión reducida y pagas cuotas mensuales que se cubren con el ahorro que el propio sistema produce.</p>
-          <div class="fin-dato" data-i18n="financiamiento.dato2"></div>
+          <div class="fin-dato" data-i18n="financiamiento.dato2">Te ofrecemos créditos y planes de arrendamiento a tu medida.</div>
         </div>
       </div>
 
@@ -3636,7 +3651,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
         <div class="fin-body">
           <div class="fin-k" data-i18n="financiamiento.div3">BESS as a Service</div>
           <h3 data-i18n="financiamiento.h33">Cero inversión inicial</h3>
-          <p data-i18n="financiamiento.p4">Loialt diseña, instala, opera el sistema y se cobra con los ahorros que genera. Tú no pones capital ni te encargas de la operación.</p>
+          <p data-i18n-html="financiamiento.p4">Loialt diseña, instala y opera el sistema. Con este esquema se reduce el riesgo de inversión: <b>si no hay ahorros, no hay pagos.</b></p>
           <div class="fin-dato" data-i18n="financiamiento.dato3"></div>
         </div>
       </div>
@@ -3783,7 +3798,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
 <!-- ================= SCRIPTS ================= -->
 <!-- i18n ANTES de GSAP: el idioma debe estar aplicado cuando SplitText parta
      los títulos y el pager mida las losas, o quedarían sobre el texto viejo. -->
-<script src="./public/i18n.js?v=22"></script>
+<script src="./public/i18n.js?v=23"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/SplitText.min.js"></script>
