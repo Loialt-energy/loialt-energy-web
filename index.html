@@ -1099,11 +1099,26 @@ html .quicknav, html .quicknav a, html header.nav{ transition: color .6s ease, b
      el nav" en móvil). overflow-x:hidden lo arregla pero mata el swipe;
      contain:layout aísla el layout interno del cálculo del ancestro sin tocar
      el scroll — verificado que el carrusel sigue midiendo 904px de scrollWidth. */
-  #tecnologia .tf-steps{ display:flex; overflow-x:auto; scroll-snap-type:x mandatory; contain:layout;
+  /* ⚠️ SIN RECORTE — y es la causa de que los títulos no se vieran (2026-09-29).
+     Esta pista nació como CARRUSEL horizontal (`overflow-x:auto` + scroll-snap),
+     y `overflow-x` distinto de `visible` obliga a `overflow-y` a valer `auto`:
+     o sea que también recorta por ABAJO. Su alto de LAYOUT es el de la tarjeta
+     más alta, pero las tarjetas llegan desplazadas hacia abajo por su animación
+     de entrada — y un `transform` no cuenta para el layout. Resultado: los
+     últimos ~30 px quedaban fuera, que es justo donde vive el rótulo.
+     Es el mismo recorte que antes cortaba la última línea de la descripción; lo
+     di por artefacto de headless porque forzar `transform:none` lo arreglaba, y
+     no lo era — lo confirmó el usuario viendo los títulos ausentes en su
+     teléfono. **Un recorte que solo aparece con la animación puesta sigue siendo
+     un recorte.**
+     Ahora las tres tarjetas caben en la fila (decisión del usuario), así que no
+     hay nada que deslizar: `overflow:visible` y fuera el scroll-snap.
+     `contain:layout` SE QUEDA: está por el bug de 2026-08-27 (el ancho preferido
+     de la pista se filtraba al cálculo del viewport y ensanchaba el layout), y
+     no recorta — eso sería `contain:paint`. */
+  #tecnologia .tf-steps{ display:flex; overflow:visible; contain:layout;
     align-items:flex-start;
-    gap:0.75rem; margin:0 calc(var(--pad) * -1); padding:0 var(--pad) 0.375rem;
-    -webkit-overflow-scrolling:touch; scrollbar-width:none; -ms-overflow-style:none; }
-  #tecnologia .tf-steps::-webkit-scrollbar{ display:none; }
+    gap:0.75rem; margin:0; padding:0; }
   /* ⚠️ LAS TRES TARJETAS A LA VEZ — decisión del usuario (2026-09-29).
      El 29-sep se repuso un `flex:0 0 78%` que convertía esto en un carrusel de
      una tarjeta por pantalla, porque la auditoría midió las capturas del EMS en
