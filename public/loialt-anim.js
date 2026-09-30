@@ -264,7 +264,7 @@ const STOPS_M = {
   // pintaba ANTES que ese fondo y quedaba invisible. Sin foto y en noche, la
   // losa vuelve a ser transparente y el rayo se ve como en las demás.
   // Afinados por el usuario en #tune desde el teléfono (2026-09-29).
-  what:      { x: 50,   y: 86,   s: 1.7,  rx: 0, ry: 0, op: 1,    dim: 1, halo: 0, breathe: 1, z: -1 },
+  what:      { x: 50,   y: 88,   s: 1.4,  rx: 0, ry: 0, op: 0.75, dim: 1, halo: 0, breathe: 1, z: -1 },
   /* ⚠️ `z: 3`, NO -1 (2026-09-29). La burbuja de la gráfica (`.peak-inner`) está
      en z:2 del contexto raíz, así que con el -1 de las demás paradas el rayo
      quedaba DETRÁS de ella — y encima desenfocado por su `backdrop-filter`.
@@ -272,7 +272,7 @@ const STOPS_M = {
      Contrapartida, a la vista: ahora el rayo pasa POR DELANTE de la curva y del
      -42%. Las dos perillas para equilibrarlo son `opacidad` y `z-index`, las dos
      en #tune. */
-  peak:      { x: 71,   y: 34,   s: 1.25, rx: 0, ry: 0, op: 0.85, dim: 1, halo: 0, breathe: 1, z:  3 },
+  peak:      { x: 50,   y: 50.5, s: 2.35, rx: 0, ry: 0, op: 0.4,  dim: 1, halo: 0, breathe: 1, z:  3 },
   productos: { x: 48,   y: 61,   s: 3,    rx: 0, ry: 0, op: 0.4,  dim: 1, halo: 0, breathe: 1, z: -1 },
   metrics:   { x: 50,   y: 80.5, s: 1.75, rx: 0, ry: 0, op: 0.4,  dim: 1, halo: 0, breathe: 1, z: -1 },
 };
