@@ -1126,18 +1126,35 @@ html .quicknav, html .quicknav a, html header.nav{ transition: color .6s ease, b
    que imagen y texto lean como UNA sola pieza cuya mitad inferior es blanca.
    Los colores se fijan a mano (`--tension` / navy) y NO por token: dentro de una
    losa de noche `--ink` es claro, y sobre blanco sería ilegible. */
-/* ⚠️ Van con `#tecnologia` delante A PROPÓSITO: más abajo en la hoja está
+/* SOLO IMAGEN + TÍTULO en móvil (2026-09-29, pedido del usuario: «quedó raro
+   así todo largo, solo pon los títulos con las imágenes… y quitamos las burbujas
+   de texto»). A tres columnas en 393 px cada tarjeta mide ~104, así que la
+   descripción caía en cuatro renglones y alargaba la fila el doble que la propia
+   captura. Fuera la descripción, fuera la burbuja, y el rótulo en blanco
+   centrado bajo su imagen.
+   ⚠️ Van con `#tecnologia` delante A PROPÓSITO: más abajo en la hoja está
    `[data-theme="night"] .tf-step-foot{ background:rgba(255,255,255,.035) }`, que
-   con la losa ya en noche empata en especificidad (0,2,0) y gana por ORDEN. Con
-   el id (1,1,0) esta se impone sin `!important`. El primer intento se escribió
-   sin él y la burbuja salió oscura, con el texto navy encima: invisible. */
-#tecnologia .tf-step .tf-step-foot{ margin:0; padding:0.6rem 0.7rem 0.65rem;
-  background:#fff; border:1px solid rgba(2,24,56,.09); border-top:0;
-  border-radius:0 0 0.625rem 0.625rem;
-  box-shadow:0 0.75rem 1.5rem -0.75rem rgba(2,24,56,.35); }
-#tecnologia .tf-step .tf-shot{ border-radius:0.625rem 0.625rem 0 0; }
-#tecnologia .tf-step .tf-step-foot .tf-k{ color:#4d8338; }
-#tecnologia .tf-step .tf-step-foot .tf-txt{ color:#25313f; }
+   con la losa en noche empata en especificidad (0,2,0) y gana por ORDEN. Con el
+   id (1,1,0) estas se imponen sin `!important` — la burbuja blanca del intento
+   anterior salió oscura justo por escribirlas sin él.
+   Y el rótulo NO usa `--ink`: dentro de una losa de noche vale claro, sí, pero
+   dejarlo en token lo ataría al tono de la losa, y este blanco es una decisión
+   de esta vista. */
+#tecnologia .tf-step .tf-step-foot{ margin:0.5rem 0 0; padding:0;
+  background:none; border:0; box-shadow:none; }
+#tecnologia .tf-step .tf-shot{ border-radius:0.625rem; }
+/* Y fuera también el PANEL de la tarjeta. `.tf-step{ background:none }` ya lo
+   quitaba desde el rediseño de 2026-09-03, pero al pasar Tecnología a losa de
+   NOCHE se despertó `[data-theme="night"] .tf-step{ background:rgba(20,28,42,.96) }`
+   —dormido mientras la losa era de día— que gana por especificidad y volvía a
+   dibujar un rectángulo oscuro detrás de cada captura. Con «solo los títulos con
+   las imágenes» eso sobra igual que la burbuja. Mismo caso que `.fin-k` cuando
+   Financiamiento pasó a noche: al cambiar el tono de una losa hay que revisar
+   qué overrides de `[data-theme="night"]` se activan solos. */
+#tecnologia .tf-step{ background:none; border:0; box-shadow:none; }
+#tecnologia .tf-step .tf-txt{ display:none; }
+#tecnologia .tf-step .tf-k{ display:block; text-align:center; color:#fff;
+  letter-spacing:.06em; line-height:1.25; }
   /* el pie traía márgenes NEGATIVOS para sangrar de borde a borde dentro de la
      tarjeta; sin tarjeta hay que anular la abreviatura completa, no solo los
      lados, o el margen inferior negativo desalinea la fila. */
