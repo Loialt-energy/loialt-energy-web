@@ -476,6 +476,17 @@ html.tone-night .social-fab-list a:hover{ color:var(--energy); }
      la página 1 baja a 415. La letra NO se toca — ese fue justo el error de los
      escalones de compresión que esta paginación vino a sustituir. */
   .quicknav-dock.qn-paginado{ gap:1rem; }
+  /* REGLA ESTABLECIDA (2026-10-01, pedido del usuario): si las siete no caben,
+     SIEMPRE son dos páginas de 4 + 3 — «aunque la letra se haga un poco más
+     pequeña». Antes se repartía en tres páginas y salían 3 · 2 · 2, dos palabras
+     sueltas. `--qn-esc` es ese encogimiento, lo calcula `initDockPaginado()`
+     midiendo, y tiene PISO: nunca baja del 80 %, que sobre el mínimo de .92rem
+     son 11.8 px — justo por encima del piso de legibilidad de ~11.7 px que fijó
+     la auditoría de móvil. Si ni al 80 % cabe, se vuelve al reparto medido:
+     meter las palabras bajo el wordmark es peor que tres páginas. */
+  .quicknav-dock.qn-paginado a{
+    font-size: calc(clamp(.92rem,1.15vw,1.08rem) * var(--qn-esc, 1));
+  }
   /* Mismas flechas que el carrusel de Productos (pedido del usuario): solo el
      trazo, sin burbuja ni línea recta. El aviso de que responde lo da el color
      y un empujón hacia donde te va a llevar. */
@@ -3649,7 +3660,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
       <!-- El hueco del render va dimensionado con --fin-h: cuando lleguen las
            piezas 3D se sustituye el .ph por un <img> y nada se mueve. -->
       <div class="fin-card reveal">
-        <div class="fin-media"><img src="/public/fin-venta.webp?v=3" alt="Contenedor BESS sobre un zócalo macizo de una sola pieza: el sistema es tuyo desde el primer día." width="450" height="392" loading="lazy" decoding="async" data-i18n-attr-alt="financiamiento.alt1"></div>
+        <div class="fin-media"><img src="/public/fin-venta.webp?v=4" alt="Contenedor BESS sobre un zócalo macizo de una sola pieza: el sistema es tuyo desde el primer día." width="450" height="392" loading="lazy" decoding="async" data-i18n-attr-alt="financiamiento.alt1"></div>
         <div class="fin-body">
           <div class="fin-k" data-i18n="financiamiento.div1">Venta directa</div>
           <h3 data-i18n="financiamiento.h31">Propiedad total</h3>
@@ -3659,7 +3670,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
       </div>
 
       <div class="fin-card reveal">
-        <div class="fin-media"><img src="/public/fin-arrendamiento.webp?v=3" alt="Contenedor BESS sobre un zócalo mitad macizo y mitad luz verde: la inversión repartida, solo pagas una parte por adelantado." width="450" height="392" loading="lazy" decoding="async" data-i18n-attr-alt="financiamiento.alt2"></div>
+        <div class="fin-media"><img src="/public/fin-arrendamiento.webp?v=4" alt="Contenedor BESS sobre un zócalo mitad macizo y mitad luz verde: la inversión repartida, solo pagas una parte por adelantado." width="450" height="392" loading="lazy" decoding="async" data-i18n-attr-alt="financiamiento.alt2"></div>
         <div class="fin-body">
           <div class="fin-k" data-i18n="financiamiento.div2">Arrendamiento</div>
           <h3 data-i18n="financiamiento.h32">Inversión inicial mínima</h3>
@@ -3669,7 +3680,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
       </div>
 
       <div class="fin-card reveal">
-        <div class="fin-media"><img src="/public/fin-baas.webp?v=3" alt="Contenedor BESS sin zócalo, apoyado solo sobre luz verde: cero inversión inicial, lo opera Loialt." width="450" height="392" loading="lazy" decoding="async" data-i18n-attr-alt="financiamiento.alt3"></div>
+        <div class="fin-media"><img src="/public/fin-baas.webp?v=4" alt="Contenedor BESS sin zócalo, apoyado solo sobre luz verde: cero inversión inicial, lo opera Loialt." width="450" height="392" loading="lazy" decoding="async" data-i18n-attr-alt="financiamiento.alt3"></div>
         <div class="fin-body">
           <div class="fin-k" data-i18n="financiamiento.div3">BESS as a Service</div>
           <h3 data-i18n="financiamiento.h33">Cero inversión inicial</h3>
@@ -4449,6 +4460,11 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
     var flechas = [].slice.call(dock.querySelectorAll('.qn-flecha'));
     if(!enls.length) return;
     var AIRE = 28;                                 // respiro a cada lado
+    var ESC_MIN = 0.8;                             // ver la nota del CSS: 11.8px
+    function escala(v){
+      if(v === 1) dock.style.removeProperty('--qn-esc');
+      else dock.style.setProperty('--qn-esc', String(Math.round(v * 1000) / 1000));
+    }
     var mqEscritorio = window.matchMedia('(min-width:901px)');   // gate VIVO
     var paginas = [], actual = 0, ultimoActivo = null;
 
@@ -4509,6 +4525,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
       if(!mqEscritorio.matches){
         dock.classList.remove('qn-paginado');
         enls.forEach(function(a){ a.style.display = ''; });
+        escala(1);
         paginas = [enls]; actual = 0; ultimoActivo = null;
         return;
       }
@@ -4522,28 +4539,43 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
       var total = dock.scrollWidth;
 
       if(total <= util){
-        paginas = [enls];
+        paginas = [enls]; escala(1);
       } else {
-        /* DOS PÁGINAS SIEMPRE QUE SE PUEDA, la primera con la mitad mayor: con
-           siete secciones sale 4 + 3. Pedido explícito del usuario (2026-10-01),
-           que encontró «horrible» ver dos palabras sueltas — que es lo que daba
-           el reparto anterior en ventanas de ~1000px.
-           Se busca el reparto MÁS GRANDE que de verdad quepa, probando de
-           ceil(n/2) hacia abajo y midiendo CADA página en su estado real
-           (`anchoPagina`), no con aritmética sobre anchos sueltos. Dos razones:
-           el gap cambia al paginar, y las palabras no miden lo mismo, así que la
-           capacidad calculada sobre las primeras no vale para las siguientes.
-           Y nunca se impone un reparto que no quepa: desbordar aquí es meter las
-           palabras bajo el wordmark, que es el fallo que esta paginación vino a
-           resolver. */
-        var tope = Math.ceil(enls.length / 2);
-        for(var cap = tope; cap >= 1; cap--){
-          var cand = repartir(enls.length, cap), cabe = true;
-          for(var k = 0; k < cand.length; k++){
-            if(anchoPagina(cand[k]) > util){ cabe = false; break; }
+        /* DOS PÁGINAS DE 4 + 3, como regla. Pedido explícito del usuario
+           (2026-10-01): «si no caben los 7, separar en 3 y 4, aunque la letra se
+           haga un poco más pequeña». El reparto anterior medía cuántas cabían y
+           en ventanas de ~950px daba 3 · 2 · 2 — dos palabras sueltas.
+           Lo que se mide ahora NO es el reparto sino CUÁNTO hay que encoger para
+           que ese reparto entre. Cada página se mide en su ESTADO REAL
+           (`anchoPagina`), no con aritmética sobre anchos sueltos: el gap cambia
+           al paginar y las palabras no miden lo mismo.
+           Se itera porque el gap NO encoge con la letra, así que un solo
+           `util/ancho` se queda corto; en 2-3 pasadas converge. */
+        var corte = Math.ceil(enls.length / 2);
+        var fijo = [enls.slice(0, corte), enls.slice(corte)];
+        var e = 1;
+        escala(e);
+        var ancho = Math.max(anchoPagina(fijo[0]), anchoPagina(fijo[1]));
+        for(var i = 0; i < 5 && ancho > util && e > ESC_MIN; i++){
+          e = Math.max(ESC_MIN, e * (util / ancho) * 0.99);
+          escala(e);
+          ancho = Math.max(anchoPagina(fijo[0]), anchoPagina(fijo[1]));
+        }
+        if(ancho <= util){
+          paginas = fijo;
+        } else {
+          /* Ni al piso de legibilidad cabe (ventanas de ~900px). Entonces manda
+             el invariante del nav: antes tres páginas que palabras debajo del
+             wordmark. Se vuelve a letra entera y se reparte por medición. */
+          escala(1);
+          for(var cap = corte - 1; cap >= 1; cap--){
+            var cand = repartir(enls.length, cap), cabe = true;
+            for(var k = 0; k < cand.length; k++){
+              if(anchoPagina(cand[k]) > util){ cabe = false; break; }
+            }
+            paginas = cand;
+            if(cabe) break;
           }
-          paginas = cand;
-          if(cabe) break;
         }
       }
       if(actual >= paginas.length) actual = paginas.length - 1;
