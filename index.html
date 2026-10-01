@@ -3383,7 +3383,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
           <p class="svc-lead" data-i18n="servicio.p1">Estudiamos tu operación y diseñamos el sistema a tu medida.</p>
           <ul class="prob-list">
             <li data-i18n="servicio.li1">Estudio gratuito in situ: 3–12 meses de consumo y perfil de carga, con informe de ahorro estimado y retorno.</li>
-            <li data-i18n-html="servicio.li2">Modelos de negocio: compra, arrendamiento, <b>BESS as a Service</b> o ahorros compartidos.</li>
+            <li data-i18n-html="servicio.li2">Modelos de negocio: compra, arrendamiento o <b>BESS as a Service</b>.</li>
             <li data-i18n="servicio.li3">Diseño normativo (NOM, CFE) y gestión de trámites CRE/CFE.</li>
           </ul>
         </div>
@@ -3704,7 +3704,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
     <h2 class="metrics-title reveal" data-i18n="metrics.h21">Resultados en operación.</h2>
     <div class="metrics-grid">
       <div class="metric reveal"><div class="num" data-count="120" data-suffix="+">0</div><div class="cap"><span class="label" data-i18n="metrics.span1">MWh instalados</span><p data-i18n="metrics.p1">Capacidad desplegada en sitios industriales y comerciales.</p></div></div>
-      <div class="metric reveal"><div class="num" data-count="42" data-suffix=" %"><span>0</span></div><div class="cap"><span class="label" data-i18n="metrics.span2">Ahorro promedio</span><p data-i18n="metrics.p2">Reducción del cargo por demanda en tarifa CFE.</p></div></div>
+      <div class="metric reveal"><div class="num" data-count="30" data-suffix=" %"><span>0</span></div><div class="cap"><span class="label" data-i18n="metrics.span2">Ahorro potencial</span><p data-i18n="metrics.p2">Depende del perfil de carga, la tarifa y los horarios de consumo.</p></div></div>
       <div class="metric reveal"><div class="num" data-count="99" data-suffix=".9%">0</div><div class="cap"><span class="label" data-i18n="metrics.span3">Disponibilidad</span><p data-i18n="metrics.p3">Respaldo automático ante fallas e interrupciones de red.</p></div></div>
       <div class="metric reveal"><div class="num" data-count="18" data-suffix="k+">0</div><div class="cap"><span class="label" data-i18n="metrics.span4">Ton CO₂ evitadas</span><p data-i18n="metrics.p4">Energía más limpia, medible y reportable año con año.</p></div></div>
     </div>
@@ -3836,7 +3836,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
 <!-- ================= SCRIPTS ================= -->
 <!-- i18n ANTES de GSAP: el idioma debe estar aplicado cuando SplitText parta
      los títulos y el pager mida las losas, o quedarían sobre el texto viejo. -->
-<script src="./public/i18n.js?v=23"></script>
+<script src="./public/i18n.js?v=24"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/SplitText.min.js"></script>
@@ -4295,7 +4295,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
 
   /* ---------- PEAK SHAVING pinned scene ---------- */
   function initPeak(){
-    if(!hasGSAP) { document.getElementById('saveNum').textContent='42'; return; }
+    if(!hasGSAP) { document.getElementById('saveNum').textContent='30'; return; }
     var pin = document.getElementById('peakPin');
     var peakGroup = document.getElementById('peakGroup');
     var flat = document.getElementById('flatLine');
@@ -4308,7 +4308,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
       // estado final estable, sin pin
       if(peakGroup) peakGroup.style.transform='scaleY(0.12)';
       if(flat) flat.setAttribute('opacity','1');
-      if(saveNum) saveNum.textContent='42';
+      if(saveNum) saveNum.textContent='30';
       return;
     }
     var st = { s:0 };
@@ -4329,7 +4329,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
     tl.to(areaPico,  { opacity:0, ease:'none', duration:1.6 }, 0);
     tl.to(areaVerde, { opacity:1, ease:'none', duration:1.6 }, 0);
     tl.to(flat, { opacity:1, ease:'power1.in', duration:.9 }, .5);
-    tl.to(st, { s:42, ease:'none', duration:1.6, onUpdate:function(){ saveNum.textContent=Math.round(st.s); }}, 0);
+    tl.to(st, { s:30, ease:'none', duration:1.6, onUpdate:function(){ saveNum.textContent=Math.round(st.s); }}, 0);
     // reproduce sola al entrar; reinicia a 0 al salir (invisible, ya se ve la siguiente diapositiva).
     // MÓVIL: corre UNA sola vez — completada, el estado final (línea verde + −42%)
     // queda fijo el resto de la sesión (como la batería de Críticos).
