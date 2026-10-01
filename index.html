@@ -470,14 +470,30 @@ html.tone-night .social-fab-list a:hover{ color:var(--energy); }
   /* QUÉ ENLACES SE VEN lo decide el JS con `style.display` (el número de páginas
      y el reparto son medidos, no fijos), así que aquí no hay reglas por página.
      El CSS solo pone las flechas y quita el separador sobrante. */
+  /* Al paginar, el gap se acorta. No es cosmética: con el gap ancho las cuatro
+     primeras + los dos huecos de flecha piden 464px contra los 438 útiles de una
+     ventana de ~1000, y el reparto fijo 4+3 no cabría. Medido a 997: con 1rem
+     la página 1 baja a 415. La letra NO se toca — ese fue justo el error de los
+     escalones de compresión que esta paginación vino a sustituir. */
+  .quicknav-dock.qn-paginado{ gap:1rem; }
+  /* Mismas flechas que el carrusel de Productos (pedido del usuario): solo el
+     trazo, sin burbuja ni línea recta. El aviso de que responde lo da el color
+     y un empujón hacia donde te va a llevar. */
   .quicknav-dock.qn-paginado .qn-flecha{
     display:inline-flex; align-items:center; justify-content:center;
     width:1.5rem; height:1.5rem; padding:0; flex:0 0 auto;
-    background:none; border:0; cursor:pointer; color:inherit;
-    font-size:.9rem; line-height:1; opacity:.55;
-    transition:opacity .2s ease, color .2s ease;
+    background:none; border:0; cursor:pointer;
+    transition:transform .2s ease;
   }
-  .quicknav-dock.qn-paginado .qn-flecha:hover{ opacity:1; color:var(--energy); }
+  .quicknav-dock.qn-paginado .qn-flecha svg{
+    width:.95rem; height:.95rem; fill:none; stroke:currentColor; stroke-width:1.75;
+    stroke-linecap:round; stroke-linejoin:round; opacity:.55;
+    transition:stroke .2s ease, opacity .2s ease;
+  }
+  .quicknav-dock.qn-paginado .qn-prev svg{ transform:rotate(180deg); }
+  .quicknav-dock.qn-paginado .qn-flecha:hover svg{ opacity:1; stroke:var(--energy); }
+  .quicknav-dock.qn-paginado .qn-next:hover{ transform:translateX(3px); }
+  .quicknav-dock.qn-paginado .qn-prev:hover{ transform:translateX(-3px); }
   /* La flecha del extremo al que NO se puede ir se oculta con `visibility`, no
      con `display`: así las palabras no se recorren al cambiar de página. */
   .quicknav-dock.qn-paginado.qn-primera .qn-prev,
@@ -2143,13 +2159,19 @@ em, i, cite, address, dfn, var{ font-style:normal; }
   /* páginas: se oculta la que no toca */
   .quicknav[data-pagina="1"] a[data-qn="2"],
   .quicknav[data-pagina="2"] a[data-qn="1"]{ display:none; }
+  /* El botón conserva sus 2.5rem de blanco de toque; lo que desaparece es el
+     glifo gordo, sustituido por el chevron del carrusel de Productos. */
   .qn-flecha{
     display:flex; align-items:center; justify-content:center;
     min-width:2.5rem; min-height:2.5rem;      /* blanco de toque cómodo */
     background:none; border:0; padding:0; cursor:pointer;
-    font-family:var(--font-display); font-size:1.15rem; line-height:1;
     color:var(--energy-deep); flex:0 0 auto;
   }
+  .qn-flecha svg{
+    width:1rem; height:1rem; fill:none; stroke:currentColor; stroke-width:1.75;
+    stroke-linecap:round; stroke-linejoin:round;
+  }
+  .qn-prev svg{ transform:rotate(180deg); }
   /* La flecha se ve SOLO del lado al que se movería. La contraria conserva su
      espacio (visibility, no display) para que las 3 palabras no se recorran al
      cambiar de página. */
@@ -2883,7 +2905,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
        si se repagina una, se repagina la otra. Solo se parte en dos páginas
        cuando no caben las siete (lo decide `initDockPaginado`, midiendo). -->
   <nav class="quicknav quicknav-dock" aria-hidden="true" data-pagina="1">
-    <button type="button" class="qn-flecha qn-prev" tabindex="-1" aria-hidden="true">←</button>
+    <button type="button" class="qn-flecha qn-prev" tabindex="-1" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
     <a href="#nosotros" tabindex="-1" data-i18n="doc.a1">Nosotros</a>
     <a href="#problems" tabindex="-1" data-i18n="doc.a2">Puntos críticos</a>
     <a href="#what" tabindex="-1" data-i18n="doc.a3">Solución</a>
@@ -2891,7 +2913,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
     <a href="#tecnologia" tabindex="-1" data-i18n="doc.a5">Tecnología</a>
     <a href="#productos" tabindex="-1" data-i18n="doc.a6">Productos</a>
     <a href="#financiamiento" tabindex="-1" data-i18n="doc.navFin">Financiamiento</a>
-    <button type="button" class="qn-flecha qn-next" tabindex="-1" aria-hidden="true">→</button>
+    <button type="button" class="qn-flecha qn-next" tabindex="-1" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
   </nav>
   <div class="nav-actions">
     <button type="button" class="btn solid nav-desktop-cta" data-open-calc data-cursor data-i18n-html="doc.button1">Evalúa tu operación<span class="fill"></span></button>
@@ -3766,7 +3788,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
 
 <!-- BARRA RÁPIDA DE SECCIONES (fija abajo, presente toda la página) -->
 <nav class="quicknav" aria-label="Ir a sección" data-pagina="1" data-i18n-attr-aria-label="doc.aria-label2">
-  <button type="button" class="qn-flecha qn-prev" aria-label="Ver las secciones anteriores" data-i18n-attr-aria-label="doc.aria-label3">←</button>
+  <button type="button" class="qn-flecha qn-prev" aria-label="Ver las secciones anteriores" data-i18n-attr-aria-label="doc.aria-label3"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
   <a href="#nosotros" data-qn="1" data-i18n="doc.a17">Nosotros</a>
   <a href="#problems" data-qn="1" data-i18n="doc.a18">Puntos críticos</a>
   <a href="#what" data-qn="1" data-i18n="doc.a19">Solución</a>
@@ -3774,7 +3796,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
   <a href="#tecnologia" data-qn="2" data-qn-ini data-i18n="doc.a21">Tecnología</a>
   <a href="#productos" data-qn="2" data-i18n="doc.a22">Productos</a>
   <a href="#financiamiento" data-qn="2" data-i18n="doc.navFin">Financiamiento</a>
-  <button type="button" class="qn-flecha qn-next" aria-label="Ver las secciones siguientes" data-i18n-attr-aria-label="doc.aria-label4">→</button>
+  <button type="button" class="qn-flecha qn-next" aria-label="Ver las secciones siguientes" data-i18n-attr-aria-label="doc.aria-label4"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
 </nav>
 
 <!-- REDES SOCIALES: píldora flotante abajo-izquierda, presente en toda la página.
@@ -4455,6 +4477,17 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
       return out;
     }
 
+    /* Mide lo que ocupa una página EN SU ESTADO REAL: con la clase de paginado
+       puesta (que es la que acorta el gap) y solo sus enlaces visibles. Las dos
+       flechas van con `visibility:hidden`, no `display`, así que ocupan lo mismo
+       en las dos páginas y no hay que descontarlas a mano. */
+    function anchoPagina(lista){
+      dock.classList.add('qn-paginado');
+      enls.forEach(function(a){ a.style.display = 'none'; });
+      lista.forEach(function(a){ a.style.display = ''; });
+      return dock.scrollWidth;
+    }
+
     function pintar(){
       var hayVarias = paginas.length > 1;
       dock.classList.toggle('qn-paginado', hayVarias);
@@ -4487,25 +4520,31 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
       enls.forEach(function(a){ a.style.display = ''; });
       var util = anchoUtil();
       var total = dock.scrollWidth;
-      var anchos = enls.map(function(a){ return a.getBoundingClientRect().width; });
-      var gap = enls.length > 1
-        ? Math.max(0, enls[1].getBoundingClientRect().left - enls[0].getBoundingClientRect().right)
-        : 0;
-      var anchoFlechas = flechas.length
-        ? flechas.reduce(function(t,b){ return t + 24 + gap; }, 0)   // 1.5rem cada una
-        : 0;
 
       if(total <= util){
         paginas = [enls];
       } else {
-        // Cuántas caben por página, ya descontando el sitio de las dos flechas.
-        var margen = util - anchoFlechas, suma = 0, cap = 0;
-        for(var i = 0; i < anchos.length; i++){
-          var siguiente = suma + anchos[i] + (cap ? gap : 0);
-          if(siguiente > margen) break;
-          suma = siguiente; cap++;
+        /* DOS PÁGINAS SIEMPRE QUE SE PUEDA, la primera con la mitad mayor: con
+           siete secciones sale 4 + 3. Pedido explícito del usuario (2026-10-01),
+           que encontró «horrible» ver dos palabras sueltas — que es lo que daba
+           el reparto anterior en ventanas de ~1000px.
+           Se busca el reparto MÁS GRANDE que de verdad quepa, probando de
+           ceil(n/2) hacia abajo y midiendo CADA página en su estado real
+           (`anchoPagina`), no con aritmética sobre anchos sueltos. Dos razones:
+           el gap cambia al paginar, y las palabras no miden lo mismo, así que la
+           capacidad calculada sobre las primeras no vale para las siguientes.
+           Y nunca se impone un reparto que no quepa: desbordar aquí es meter las
+           palabras bajo el wordmark, que es el fallo que esta paginación vino a
+           resolver. */
+        var tope = Math.ceil(enls.length / 2);
+        for(var cap = tope; cap >= 1; cap--){
+          var cand = repartir(enls.length, cap), cabe = true;
+          for(var k = 0; k < cand.length; k++){
+            if(anchoPagina(cand[k]) > util){ cabe = false; break; }
+          }
+          paginas = cand;
+          if(cabe) break;
         }
-        paginas = repartir(enls.length, Math.max(1, cap));
       }
       if(actual >= paginas.length) actual = paginas.length - 1;
       dock.className = antes;
@@ -6121,7 +6160,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
     if(mq.addEventListener) mq.addEventListener('change', aplicar);
   })();
 </script>
-<script src="./public/flow-bg.js?v=5"></script>
+<script src="./public/flow-bg.js?v=6"></script>
 
 <!-- =========================================================
      ANALÍTICA · Umami Cloud

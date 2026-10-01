@@ -351,10 +351,19 @@
   var mqM = window.matchMedia && window.matchMedia('(max-width: 900px)');
   function mobileMode(){ return !!(mqM && mqM.matches); }
 
-  // Secciones con su tono (día/noche), estático desde el markup (data-theme).
+  /* Secciones con su tono. ⚠️ EL TONO SE LEE VIVO, NO SE CONGELA (2026-10-01).
+     Antes se guardaba `day:` aquí mismo, y eso era un gate congelado de los que
+     este proyecto prohíbe: el interruptor de modo oscuro de móvil (index.html)
+     reescribe TODOS los `data-theme` a "night" ANTES de que corra este script,
+     así que una página cargada con la ventana angosta se quedaba con la foto
+     "todo es noche" para siempre. Al ensanchar, el DOM se restauraba pero
+     `computeDayClip()` seguía devolviendo 'none' con la foto vieja ⇒ el lienzo
+     de día no se dibujaba nunca (se quedaba en 300x150, su tamaño por defecto)
+     y asomaba el de noche bajo un texto en tinta de día. */
   var secs = [].slice.call(document.querySelectorAll('section[id]')).map(function(s){
-    return { el: s, day: s.getAttribute('data-theme') === 'day' };
+    return { el: s };
   });
+  function esDia(s){ return !!s && s.el.getAttribute('data-theme') === 'day'; }
 
   // Recorta el lienzo día en la FRONTERA real de la diapositiva (borde duro, se mueve
   // con el scroll). Devuelve 'full' | 'none' | 'partial' para saber qué lienzo dibujar.
@@ -368,10 +377,10 @@
     if(boundary === null){                 // encajado: tono de la sección que cubre el centro
       var cy = H * 0.5, cur = secs[0];
       for(var j=0;j<secs.length;j++){ var r = secs[j].el.getBoundingClientRect(); if(r.top <= cy && r.bottom > cy){ cur = secs[j]; break; } }
-      if(cur.day){ dayCanvas.style.clipPath = 'inset(0)'; return 'full'; }
+      if(esDia(cur)){ dayCanvas.style.clipPath = 'inset(0)'; return 'full'; }
       dayCanvas.style.clipPath = 'inset(100% 0 0 0)'; return 'none';
     }
-    var dA = above && above.day, dB = below && below.day;
+    var dA = esDia(above), dB = esDia(below);
     if(dA && dB){ dayCanvas.style.clipPath = 'inset(0)'; return 'full'; }
     if(!dA && !dB){ dayCanvas.style.clipPath = 'inset(100% 0 0 0)'; return 'none'; }
     if(dA){ dayCanvas.style.clipPath = 'inset(0 0 ' + (H - boundary) + 'px 0)'; return 'partial'; }
