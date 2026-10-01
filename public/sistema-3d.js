@@ -514,7 +514,13 @@ import * as THREE from 'https://esm.sh/three@0.160.0';
 
     // ----- objetos (mapa: +x = abajo-derecha en pantalla, -z = arriba-derecha) -----
     const world = new THREE.Group(); scene.add(world);
-    world.add(place(solarArray(), -13.5, 0, -3.5));
+    /* ⚠️ La PLANTA SOLAR se retiró el 2026-10-01 por decisión del cliente: la
+       página no menciona ni dibuja generación solar ni eólica en ningún sitio.
+       Se fue también su flecha hacia el gabinete. `solarArray()`/`solarPanel()`
+       quedan definidas pero SIN USO; no se borran por si se vuelve a pedir.
+       OJO: era el objeto más a la izquierda (x -13.5), así que al quitarlo la
+       caja envolvente encoge y el encuadre —que se deriva de ella— agranda el
+       resto de la escena. Es efecto buscado, no un descuadre. */
     const tA = new THREE.Vector3(-3.4, 0, 6.2), tB = new THREE.Vector3(-6.6, 0, 3.4);
     world.add(place(tower(), tA.x, 0, tA.z, Math.atan2(tB.x - tA.x, tB.z - tA.z)));
     world.add(place(tower(), tB.x, 0, tB.z, Math.atan2(tB.x - tA.x, tB.z - tA.z)));
@@ -547,7 +553,6 @@ import * as THREE from 'https://esm.sh/three@0.160.0';
     const arrows = new THREE.Group(); world.add(arrows);
     const O = C.orange, B = C.blue;
     // energía
-    arrows.add(arrow([[-8.6, -2.8], [-4.4, -2.8], [-4.4, 1.0], [-3.3, 1.0]], O));                // solar -> gabinete
     arrows.add(arrow([[-6.3, 1.4], [-3.3, 1.4]], O, { double: true }));                          // red <-> gabinete
     arrows.add(arrow([[-6.3, 2.2], [-3.3, 2.2]], O, { double: true }));
     arrows.add(arrow([[-2.3, 2.9], [-2.3, 6.6]], O));                                            // gabinete -> planta

@@ -475,7 +475,12 @@ html.tone-night .social-fab-list a:hover{ color:var(--energy); }
      ventana de ~1000, y el reparto fijo 4+3 no cabría. Medido a 997: con 1rem
      la página 1 baja a 415. La letra NO se toca — ese fue justo el error de los
      escalones de compresión que esta paginación vino a sustituir. */
-  .quicknav-dock.qn-paginado{ gap:1rem; }
+  /* El gap encoge CON la letra. No es cosmética: si solo encoge el texto, el
+     ancho total deja de ser proporcional a `--qn-esc` y hace falta bajar mucho
+     más la letra para ganar los mismos píxeles — a 905px el 4+3 no entraba ni
+     al 80 % y caía al reparto de tres páginas (que es lo que el usuario veía).
+     Escalando los dos, el ancho SÍ es proporcional y converge de una pasada. */
+  .quicknav-dock.qn-paginado{ gap: calc(1rem * var(--qn-esc, 1)); }
   /* REGLA ESTABLECIDA (2026-10-01, pedido del usuario): si las siete no caben,
      SIEMPRE son dos páginas de 4 + 3 — «aunque la letra se haga un poco más
      pequeña». Antes se repartía en tres páginas y salían 3 · 2 · 2, dos palabras
@@ -3130,7 +3135,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
       <div class="crit-item reveal rv-manual">
         <div class="crit-inner">
         <div class="crit-item-head"><span class="pk" data-i18n="problems.span4">03 · RENOVABLES</span><h3 data-i18n="problems.h33">Renovables difíciles de conectar</h3></div>
-        <div class="crit-item-body"><ul class="prob-list"> <li data-i18n-html="problems.li9">Generación solar/eólica inestable, con hasta <b>25 %</b> de desperdicio.</li> <li data-i18n="problems.li10">No alcanza a cubrir la demanda productiva de forma continua.</li> <li data-i18n="problems.li11">Trámites de conexión a la red complejos y extensos.</li> <li data-i18n="problems.li12">El almacenamiento ayuda a cumplir los requisitos técnicos de interconexión de CFE/CRE.</li> </ul></div>
+        <div class="crit-item-body"><ul class="prob-list"> <li data-i18n-html="problems.li9">Generación renovable inestable, con hasta <b>25 %</b> de desperdicio.</li> <li data-i18n="problems.li10">No alcanza a cubrir la demanda productiva de forma continua.</li> <li data-i18n="problems.li11">Trámites de conexión a la red complejos y extensos.</li> <li data-i18n="problems.li12">El almacenamiento ayuda a cumplir los requisitos técnicos de interconexión de CFE/CRE.</li> </ul></div>
         </div>
       </div>
     </div>
@@ -3169,7 +3174,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
         <div class="sol-panel" id="solp-0" hidden>
           <div class="pk" data-i18n="what.div1">01 · ARBITRAJE PICO–VALLE</div>
           <h3 data-i18n="what.h31">Economiza el uso de tu energía</h3>
-          <p data-i18n="what.p2">Cargamos en tarifa baja y descargamos en pico: tu costo por kWh baja y el retorno se acelera. Compatible con tarifas horarias CFE e integración solar.</p>
+          <p data-i18n="what.p2">Cargamos en tarifa baja y descargamos en pico: tu costo por kWh baja y el retorno se acelera. Compatible con las tarifas horarias de CFE.</p>
           <div class="sol-stats">
             <div class="stat"><b data-i18n="what.b1">100 kWh–2 MWh</b><span data-i18n="what.span4">ampliable &gt;20 MWh</span></div>
             <div class="stat"><b data-i18n="what.b2">3.5–5 años</b><span data-i18n="what.span5">retorno (ROI)</span></div>
@@ -3180,7 +3185,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
           <div class="sol-m">
             <h3 class="sol-m-h3" data-i18n="what.h32">Economiza tu energía</h3>
             <p data-i18n="what.p3">Optimización de consumo en horas pico.</p>
-            <p data-i18n="what.p4">Compatible con tarifas CFE e integración solar.</p>
+            <p data-i18n="what.p4">Compatible con las tarifas horarias de CFE.</p>
             <div class="sol-m-stats">
               <div class="sol-m-stat"><b data-i18n="what.b4">100 kWh–2 MWh</b> <i data-i18n="what.i1">(Ampliable &gt;20 MWh)</i></div>
               <div class="sol-m-stat"><b data-i18n="what.b5">3.5–5 años</b> <i data-i18n="what.i2">(ROI)</i></div>
@@ -3215,7 +3220,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
         <div class="sol-panel" id="solp-2" hidden>
           <div class="pk" data-i18n="what.div3">03 · INTEGRACIÓN RENOVABLE</div>
           <h3 data-i18n="what.h35">Aprovecha tu generación</h3>
-          <p data-i18n="what.p8">Estabiliza tu generación solar/eólica y cumple los requisitos de conexión, aislada o conectada a la red. Documentación técnica alineada a interconexión CFE/CRE, con potencial de servicios auxiliares.</p>
+          <p data-i18n="what.p8">Estabiliza tu generación propia y cumple los requisitos de conexión, aislada o conectada a la red. Documentación técnica alineada a interconexión CFE/CRE, con potencial de servicios auxiliares.</p>
           <div class="sol-stats">
             <div class="stat"><b data-i18n="what.b11">&lt; 100 ms</b><span data-i18n="what.span12">respuesta de regulación</span></div>
             <div class="stat"><b>≥ 98 %</b><span data-i18n="what.span13">regulación</span></div>
@@ -3226,7 +3231,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
           <!-- Copy exclusivo de MÓVIL (más corto) — desktop sigue usando el texto de arriba -->
           <div class="sol-m">
             <h3 class="sol-m-h3" data-i18n="what.h36">Maximiza tu generación</h3>
-            <p data-i18n="what.p10">Estabilización solar/eólica e interconexión CFE/CRE.</p>
+            <p data-i18n="what.p10">Estabilización de tu generación e interconexión CFE/CRE.</p>
             <p data-i18n="what.p11">Tramitología y servicios auxiliares listos.</p>
             <div class="sol-m-stats">
               <div class="sol-m-stat"><b data-i18n="what.b14">&lt; 100 ms</b> <i data-i18n="what.i9">(Respuesta)</i></div>
@@ -3414,7 +3419,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
            Antes había una .svc-panel-media por fase con foto distinta; ahora es un
            solo diagrama de arquitectura del sistema que no cambia — lo que cambia
            es solo el texto, con el morph. Placeholder hasta que llegue el archivo. -->
-      <div class="svc-media" id="sistema3D" role="img" aria-label="Render 3D de la arquitectura del sistema BESS: planta solar, red eléctrica y cargas conectadas al convertidor de potencia, con el contenedor de baterías, la plataforma de monitoreo y la jerarquía rack–módulo–celda. Gira un tercio de vuelta en cada cambio de fase." data-i18n-attr-aria-label="servicio.aria-label3"></div>
+      <div class="svc-media" id="sistema3D" role="img" aria-label="Render 3D de la arquitectura del sistema BESS: red eléctrica y cargas conectadas al convertidor de potencia, con el contenedor de baterías, la plataforma de monitoreo y la jerarquía rack–módulo–celda. Gira un tercio de vuelta en cada cambio de fase." data-i18n-attr-aria-label="servicio.aria-label3"></div>
     </div>
   </div>
 </section>
@@ -3441,7 +3446,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
     <div class="tech-flow">
       <div class="tf-steps">
         <div class="tf-step reveal">
-          <div class="tf-shot"><img src="./public/ems-01-percepcion.webp" alt="Panel de monitoreo de EnergyHub EMS: demanda actual, estado de carga, generación solar y consumo de las últimas 24 horas" decoding="async" data-i18n-attr-alt="tecnologia.alt1"></div>
+          <div class="tf-shot"><img src="./public/ems-01-percepcion.webp?v=2" alt="Panel de monitoreo de EnergyHub EMS: demanda actual, estado de carga, generación en sitio y consumo de las últimas 24 horas" decoding="async" data-i18n-attr-alt="tecnologia.alt1"></div>
           <div class="tf-step-foot">
             <div class="tf-k" data-i18n="tecnologia.div1">PERCEPCIÓN</div>
             <p class="tf-txt" data-i18n="tecnologia.p2">Datos del sitio en tiempo real (EMS local).</p>
@@ -3520,7 +3525,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
           </div>
           <div class="prod-info">
             <h3 data-i18n="productos.h32">STAR Q-PLUS</h3>
-            <p data-i18n="productos.p3">Todo en uno: integra solar, respaldo y generador.</p>
+            <p data-i18n="productos.p3">Todo en uno: inversor híbrido, respaldo y generador.</p>
             <div class="prod-cifra" data-i18n="productos.div2">125 kW · 250 kWh</div>
           </div>
         </div>
@@ -3733,7 +3738,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
     <div class="faq-list">
       <div class="faq-item reveal">
         <button class="faq-q" aria-expanded="false"><h3 data-i18n="faq.h31">¿Cómo me ahorra dinero exactamente?</h3><span class="faq-ico" aria-hidden="true"></span></button>
-        <div class="faq-a"><div class="faq-a-inner" data-i18n="faq.div1">El software carga las baterías de forma automática cuando la electricidad es más barata —de noche o al mediodía con alta radiación solar— y usa esa energía en las horas pico, cuando la tarifa es más cara. Eso reduce drásticamente tu costo por kWh y acelera el retorno de inversión. Además evita penalizaciones por excedentes: la energía sobrante que antes se desperdiciaba por saturación de la red ahora se guarda y se monetiza.</div></div>
+        <div class="faq-a"><div class="faq-a-inner" data-i18n="faq.div1">El software carga las baterías de forma automática cuando la electricidad es más barata —de noche o en horas valle— y usa esa energía en las horas pico, cuando la tarifa es más cara. Eso reduce drásticamente tu costo por kWh y acelera el retorno de inversión. Además evita penalizaciones por excedentes: la energía sobrante que antes se desperdiciaba por saturación de la red ahora se guarda y se monetiza.</div></div>
       </div>
       <div class="faq-item reveal">
         <button class="faq-q" aria-expanded="false"><h3 data-i18n="faq.h32">¿Cuánto cuesta un sistema BESS?</h3><span class="faq-ico" aria-hidden="true"></span></button>
@@ -5855,7 +5860,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
         es.forEach(function(e){
           if(e.isIntersecting && !sistema && !montando){
             montando=true;
-            import('./public/sistema-3d.js?v=13').then(function(m){
+            import('./public/sistema-3d.js?v=14').then(function(m){
               if(!host.isConnected){ montando=false; return; }
               sistema=m.initSistema3D(host,{ background:null, showGround:false, interactivo:false });
               // arranca en la vista que corresponda (la 1 al llegar; si ya se
