@@ -43,8 +43,8 @@
     /* ── hero ──────────────────────────────────────────────────────────── */
     'hero.aria-label1': 'Home',
     'hero.aria-label2': 'Loialt Energy',
-    'hero.span1': 'We store energy,',
-    'hero.span2': 'we power your <span class="amber">growth</span>.',
+    'hero.span1': 'Smart energy.',
+    'hero.span2': 'A sustainable <span class="amber">future</span>.',
     'hero.b1': 'Storage solutions built around your operation.',
     'hero.button1': 'See if you qualify<span class="fill"></span>',
     'hero.a1': 'See how it works<span class="fill"></span>',
@@ -177,7 +177,7 @@
     'servicio.div2': 'Deployment and handover',
     'servicio.h32': '02 Deployment and handover',
     'servicio.p2': 'We install certified equipment on a guaranteed schedule.',
-    'servicio.li4': 'Equipment certified to <b>IEC 62619</b> and <b>UN 38.3</b>; spare parts stocked in Mexico City, Monterrey and Guadalajara.',
+    'servicio.li4': 'Equipment certified to <b>IEC 62619</b>, <b>UN 38.3</b> and <b>CE</b>, under <b>ISO 9001 / 14001 / 45001</b> management systems; spare parts stocked in Mexico City, Monterrey and Guadalajara.',
     'servicio.li5': 'Lead times: <b>4–8 weeks</b> (small/medium) · <b>12–16</b> (large), with progress reports (excludes CFE/CRE permitting time, which varies by region).',
     'servicio.li6': 'Testing: 3 rounds of factory acceptance testing + <b>72 h</b> of live operation before grid connection.',
     'servicio.li7': 'Free training: operations, inspection and emergency response.',
@@ -330,7 +330,7 @@
 
     /* ── pie de página ─────────────────────────────────────────────────── */
     'doc.aria-label1': 'Footer',
-    'doc.p1': 'We store energy, we power your growth.',
+    'doc.p1': 'Smart energy. A sustainable future.',
     'doc.h41': 'Solutions',
     'doc.a7': 'Peak shaving',
     'doc.a8': 'Critical load backup',
