@@ -51,17 +51,39 @@ export default async function handler(req, res) {
   const resumen = { corte: corteISO, seco, filas: 0, archivos: 0, huerfanos: 0, errores: [] };
 
   // ── 1 · Recibos referenciados desde la tabla ──────────────────────────────
+  // ⚠️ La columna de fecha NO se da por supuesta. La primera versión asumía
+  // `created_at` y la tabla no la tiene: devolvía 400 y la purga no corría.
+  // Darla por hecha aquí es peligroso de un modo particular — si alguien
+  // renombra la columna, un barrido ingenuo devuelve «0 filas» y todo parece
+  // correcto mientras los recibos se quedan ahí, incumpliendo el aviso de
+  // privacidad en silencio. Así que se descubre, y si no se puede, se grita.
   let filas = [];
+  let columna = null;
   try {
-    const r = await fetch(
-      `${URL_SB}/rest/v1/contactos` +
-      `?select=id,recibo_ruta&recibo_ruta=not.is.null&created_at=lt.${corteISO}`,
-      { headers: cabeceras });
-    if (!r.ok) throw new Error(`${r.status} ${(await r.text()).slice(0, 200)}`);
-    filas = await r.json();
+    const d = await descubrirColumnaFecha(URL_SB, cabeceras);
+    columna = d.columna;
+    resumen.columnaFecha = columna;
+    if (!columna && d.columnas.length) {
+      // Hay filas pero ninguna columna parece una marca de tiempo. Se devuelven
+      // los NOMBRES de las columnas (nunca los valores: ahí hay datos
+      // personales) para poder fijarla a mano sin otra vuelta.
+      console.error('[purga] sin columna de fecha; columnas:', d.columnas.join(', '));
+      return res.status(502).json({
+        error: 'No se encontró la columna de fecha en contactos',
+        columnas: d.columnas,
+      });
+    }
+    if (columna) {
+      const r = await fetch(
+        `${URL_SB}/rest/v1/contactos` +
+        `?select=id,recibo_ruta&recibo_ruta=not.is.null&${columna}=lt.${corteISO}`,
+        { headers: cabeceras });
+      if (!r.ok) throw new Error(`${r.status} ${(await r.text()).slice(0, 200)}`);
+      filas = await r.json();
+    }
+    // Sin columna Y sin filas = tabla vacía: no hay nada que purgar ahí. El
+    // barrido de huérfanos de abajo no depende de la tabla y sigue corriendo.
   } catch (e) {
-    // Si `created_at` no existiera, aquí se ve en claro en el log en vez de
-    // fallar en silencio y dar la purga por hecha.
     console.error('[purga] no se pudo consultar contactos:', e.message);
     return res.status(502).json({ error: 'No se pudo consultar contactos', detalle: e.message });
   }
@@ -106,6 +128,28 @@ export default async function handler(req, res) {
 
   console.log('[purga]', JSON.stringify(resumen));
   return res.status(200).json(resumen);
+}
+
+// Lee UNA fila y deduce cuál es la columna de fecha. Dos criterios, en orden:
+// por nombre conocido, y si no, por CONTENIDO —la primera cuyo valor tenga
+// pinta de marca de tiempo ISO—. Lo segundo es lo que hace que sobreviva a un
+// nombre que no se nos haya ocurrido.
+async function descubrirColumnaFecha(URL_SB, cabeceras) {
+  const r = await fetch(`${URL_SB}/rest/v1/contactos?select=*&limit=1`, { headers: cabeceras });
+  if (!r.ok) throw new Error(`${r.status} ${(await r.text()).slice(0, 200)}`);
+  const filas = await r.json();
+  if (!filas.length) return { columna: null, columnas: [] };
+
+  const fila = filas[0];
+  const columnas = Object.keys(fila);
+  const CONOCIDAS = ['created_at', 'inserted_at', 'creado_en', 'fecha_creacion', 'fecha', 'created'];
+  for (const c of CONOCIDAS) if (columnas.includes(c)) return { columna: c, columnas };
+
+  const ISO = /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}/;
+  for (const c of columnas) {
+    if (typeof fila[c] === 'string' && ISO.test(fila[c])) return { columna: c, columnas };
+  }
+  return { columna: null, columnas };
 }
 
 async function borrarObjeto(URL_SB, cabeceras, ruta, resumen) {
