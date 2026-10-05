@@ -6,6 +6,19 @@
       "schedule": "0 7 * * *"
     }
   ],
+  "redirects": [
+    {
+      "source": "/((?!api/).*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "loialt-energy-web.vercel.app"
+        }
+      ],
+      "destination": "https://loialtenergy.com/$1",
+      "permanent": true
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
