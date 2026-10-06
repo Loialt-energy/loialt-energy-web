@@ -11,6 +11,17 @@
 // Correrlo a diario no borra de más —el corte son 12 meses— y en cambio
 // garantiza que ningún archivo pase un día del plazo prometido.
 //
+// ⚠️ Y HACE UN SEGUNDO TRABAJO, POR ACCIDENTE PERO IMPRESCINDIBLE: el plan
+// gratuito de Supabase PAUSA los proyectos que pasan 7 días sin actividad de
+// base de datos, y este sitio recibe pocos envíos — poco tráfico es justo la
+// condición que dispara la pausa. Esta función consulta `contactos` TODOS los
+// días aunque no haya nada que borrar (lo necesita para deducir la columna de
+// fecha), así que sirve de latido. Si se pausara, el formulario dejaría de
+// guardar y caería al respaldo `mailto:` para todos los visitantes, sin recibo
+// adjunto; y a los 90 días Supabase borra los datos.
+// POR ESO: no quitar el cron ni `CRON_SECRET` sin poner otra cosa en su lugar.
+// Sin el secreto la función corta ANTES de tocar la base, y el latido se pierde.
+//
 // ⚠️ VARIABLES DE ENTORNO (Vercel → Settings → Environment Variables):
 //   SUPABASE_URL          ya existe, la usa /api/contacto
 //   SUPABASE_SERVICE_KEY  ya existe, la usa /api/contacto
