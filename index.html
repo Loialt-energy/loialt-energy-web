@@ -5238,18 +5238,29 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
           // Respaldo: se abre el correo con todo compuesto y además se deja la
           // dirección a la vista, por si el navegador no tiene cliente de correo.
           ev('formulario-respaldo-mailto', { origen: modal.dataset.variant || 'ahorro', archivo: !!adjunto });
-          try { window.location.href = urlMailto; } catch(err){}
-          var html = '<p class="mf-thanks">'
-            + T('modal.gracias.fallo','No pudimos enviar el formulario. Abrimos tu correo con los datos; solo falta que lo envíes.') + '</p>';
+          // ⚠️ EN LOCAL NO SE ABRE EL CORREO (2026-10-06). El servidor de Python
+          // devuelve 501 a cualquier POST, así que en desarrollo este camino se
+          // recorre SIEMPRE y abría el cliente de correo en cada prueba. El
+          // respaldo sigue intacto en producción, que es donde sirve de algo; lo
+          // que se evita es la molestia y, sobre todo, mandar correos de prueba
+          // de verdad a la dirección publicada. En su lugar se dice en pantalla
+          // que es local, para no confundirlo con un fallo real del sitio.
+          var local = /^(127\.0\.0\.1|localhost|\[::1\])$/.test(location.hostname);
+          if(!local){ try { window.location.href = urlMailto; } catch(err){} }
+          var html = '<p class="mf-thanks">' + (local
+            ? 'Estás en local: el servidor de pruebas no recibe envíos, así que el formulario no llegó a ninguna parte. En loialtenergy.com sí funciona.'
+            : T('modal.gracias.fallo','No pudimos enviar el formulario. Abrimos tu correo con los datos; solo falta que lo envíes.')) + '</p>';
           // El mailto: NO puede llevar adjuntos. Si había archivo hay que decirlo,
           // o la persona cree que lo mandó y Loialt nunca lo recibe.
-          if(adjunto){
+          if(!local){
+            if(adjunto){
+              html += '<p class="mf-thanks mf-fallback">'
+                + T('modal.gracias.sinAdjunto','Tu archivo no puede viajar en ese correo: adjúntalo a mano antes de enviarlo.') + '</p>';
+            }
             html += '<p class="mf-thanks mf-fallback">'
-              + T('modal.gracias.sinAdjunto','Tu archivo no puede viajar en ese correo: adjúntalo a mano antes de enviarlo.') + '</p>';
+              + T('modal.gracias.respaldo','¿No se abrió tu correo? Escríbenos a')
+              + ' <a href="' + urlMailto.replace(/"/g,'&quot;') + '">contacto@loialtenergy.com</a></p>';
           }
-          html += '<p class="mf-thanks mf-fallback">'
-            + T('modal.gracias.respaldo','¿No se abrió tu correo? Escríbenos a')
-            + ' <a href="' + urlMailto.replace(/"/g,'&quot;') + '">contacto@loialtenergy.com</a></p>';
           mostrarFin(html);
         });
       });
