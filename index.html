@@ -3701,12 +3701,12 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
 <!-- PRUEBA SOCIAL (métricas + clientes) -->
 <section id="metrics" class="section" data-theme="night" aria-label="Prueba social" data-i18n-attr-aria-label="metrics.aria-label1">
   <div class="wrap">
-    <h2 class="metrics-title reveal" data-i18n="metrics.h21">Resultados en operación.</h2>
+    <h2 class="metrics-title reveal" data-i18n="metrics.h21">Lo que puedes esperar.</h2>
     <div class="metrics-grid">
-      <div class="metric reveal"><div class="num" data-count="120" data-suffix="+">0</div><div class="cap"><span class="label" data-i18n="metrics.span1">MWh instalados</span><p data-i18n="metrics.p1">Capacidad desplegada en sitios industriales y comerciales.</p></div></div>
-      <div class="metric reveal"><div class="num" data-count="30" data-suffix=" %"><span>0</span></div><div class="cap"><span class="label" data-i18n="metrics.span2">Ahorro potencial</span><p data-i18n="metrics.p2">Depende del perfil de carga, la tarifa y los horarios de consumo.</p></div></div>
-      <div class="metric reveal"><div class="num" data-count="99" data-suffix=".9%">0</div><div class="cap"><span class="label" data-i18n="metrics.span3">Disponibilidad</span><p data-i18n="metrics.p3">Respaldo automático ante fallas e interrupciones de red.</p></div></div>
-      <div class="metric reveal"><div class="num" data-count="18" data-suffix="k+">0</div><div class="cap"><span class="label" data-i18n="metrics.span4">Ton CO₂ evitadas</span><p data-i18n="metrics.p4">Energía más limpia, medible y reportable año con año.</p></div></div>
+      <div class="metric reveal"><div class="num" data-count="20" data-hasta="–30" data-suffix=" %">0</div><div class="cap"><span class="label" data-i18n="metrics.span1">Ahorro en tu factura</span><p data-i18n="metrics.p1">Según el perfil de consumo, la tarifa y los horarios de tu operación.</p></div></div>
+      <div class="metric reveal"><div class="num" data-count="2" data-hasta="–4" data-suffix=" años"><span>0</span></div><div class="cap"><span class="label" data-i18n="metrics.span2">Retorno de la inversión</span><p data-i18n="metrics.p2">El ahorro mensual cubre lo invertido en ese plazo, y sigue corriendo después.</p></div></div>
+      <div class="metric reveal"><div class="num" data-prefijo="≥ " data-count="15" data-suffix=" años">0</div><div class="cap"><span class="label" data-i18n="metrics.span3">Vida útil</span><p data-i18n="metrics.p3">Con garantía de capacidad: reemplazo antes de degradar al 80 %.</p></div></div>
+      <div class="metric reveal"><div class="num" data-prefijo="&lt; " data-count="200" data-suffix=" ms">0</div><div class="cap"><span class="label" data-i18n="metrics.span4">Conmutación a respaldo</span><p data-i18n="metrics.p4">Tu línea no se entera del corte: ni parpadeo ni paro de producción.</p></div></div>
     </div>
     <div class="lead" id="trust" style="margin-top:clamp(2.75rem,8vh,5.5rem)">
       <p class="reveal" style="color:var(--energy);margin-top:0.875rem;font-size:1.05rem" data-i18n="metrics.p5">Nuestros socios.</p>
@@ -3836,7 +3836,7 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
 <!-- ================= SCRIPTS ================= -->
 <!-- i18n ANTES de GSAP: el idioma debe estar aplicado cuando SplitText parta
      los títulos y el pager mida las losas, o quedarían sobre el texto viejo. -->
-<script src="./public/i18n.js?v=26"></script>
+<script src="./public/i18n.js?v=27"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/SplitText.min.js"></script>
@@ -4168,14 +4168,23 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
     }
 
     /* counters */
+    /* El contador anima UN número, así que un rango («20–30 %») no se puede
+       contar entero. Se cuenta el extremo BAJO y el resto se pinta fijo:
+         data-prefijo  «≥ » o «< », delante y a tamaño completo
+         data-hasta    «–30», detrás y también a tamaño completo
+         data-suffix   la unidad, que va pequeña y en verde (.u)
+       Así «20–30 %» arranca en 0 y aterriza en 20–30 sin que el rango parpadee. */
     gsap.utils.toArray('[data-count]').forEach(function(el){
       var end = parseFloat(el.getAttribute('data-count'));
       var suffix = el.getAttribute('data-suffix')||'';
+      var pre    = el.getAttribute('data-prefijo')||'';
+      var hasta  = el.getAttribute('data-hasta')||'';
       var dec = (end % 1 !== 0) || String(end).indexOf('.')>-1 ? 1 : 0;
       var o={v:0};
       ScrollTrigger.create({ trigger:el, start:'top 88%', once:true, onEnter:function(){
         gsap.to(o,{v:end,duration:1.6,ease:'power2.out',onUpdate:function(){
-          el.innerHTML = (dec? o.v.toFixed(1): Math.round(o.v)) + '<span class="u">'+suffix+'</span>';
+          el.innerHTML = pre + (dec? o.v.toFixed(1): Math.round(o.v)) + hasta
+            + '<span class="u">'+suffix+'</span>';
         }});
       }});
     });
