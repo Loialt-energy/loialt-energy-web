@@ -2023,8 +2023,19 @@ em, i, cite, address, dfn, var{ font-style:normal; }
    ambas tipografías se vean del mismo tamaño, la caja de RelyEZ tiene que ser
    1.57× la de CATL — de ahí la proporción de estos clamps. Que el rayo de
    RelyEZ quede más grande es correcto y buscado. */
-.socio-logo-relyez{ height:clamp(4.4rem,8.8vw,6.68rem); filter:grayscale(1) brightness(1.87); }
-.socio-logo-catl{   height:clamp(2.8rem,5.6vw,4.25rem); filter:grayscale(1) brightness(3.59); }
+/* ⚠️ SIN `filter` desde el 2026-10-13. Los logos 3D venían en su color y se
+   blanqueaban con `grayscale(1) brightness(k)`, con una k distinta por logo
+   calculada para que los dos aterrizaran en el mismo blanco. Los 2D YA son
+   blanco puro sobre transparente: cualquier filtro ahora solo los ensuciaría.
+   ── Y SE SIGUEN IGUALANDO POR LA LETRA, no por la caja ni por el área.
+   Medido sobre los archivos nuevos: CATL es puro texto (195 px de caja, 195 de
+   letra) y RelyEZ mete un rayo que sube y baja mucho más que las mayúsculas
+   (417 de caja, 173 de letra). Para que ambas tipografías midan lo mismo en
+   pantalla, la caja de RelyEZ va 1/0.4149 = 2.41x la de CATL — bastante más
+   que el 1.57 de los 3D, porque este rayo es proporcionalmente mayor.
+   Que el rayo acabe más grande es correcto y buscado. */
+.socio-logo-relyez{ height:clamp(5.3rem,10.6vw,7.95rem); }
+.socio-logo-catl{   height:clamp(2.2rem,4.4vw,3.3rem); }
 .socio-sep{ width:1px; height:clamp(2.25rem,5vh,3.25rem);
   background:linear-gradient(180deg,transparent,var(--line-strong),transparent); }
 /* MÓVIL: la fila de socios NO cabe en 393px y envuelve, con dos efectos feos
@@ -3718,13 +3729,13 @@ html.tone-day .lang-sw{ color:var(--energy-deep); border-color:rgba(90,154,66,.4
        Cierra el pendiente de la minuta sobre los logos ficticios. -->
   <div class="socios">
     <div class="socio reveal">
-      <img class="socio-logo socio-logo-catl" src="./public/socio-catl.webp?v=2"
-           alt="CATL" width="1024" height="273" decoding="async" data-i18n-attr-alt="metrics.alt1">
+      <img class="socio-logo socio-logo-catl" src="./public/socio-catl.webp?v=3"
+           alt="CATL" width="1005" height="195" decoding="async" data-i18n-attr-alt="metrics.alt1">
     </div>
     <div class="socio-sep" aria-hidden="true"></div>
     <div class="socio reveal">
-      <img class="socio-logo socio-logo-relyez" src="./public/socio-relyez.webp?v=2"
-           alt="RelyEZ" width="906" height="428" decoding="async" data-i18n-attr-alt="metrics.alt2">
+      <img class="socio-logo socio-logo-relyez" src="./public/socio-relyez.webp?v=3"
+           alt="RelyEZ" width="1049" height="417" decoding="async" data-i18n-attr-alt="metrics.alt2">
     </div>
   </div>
 </section>
